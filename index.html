@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>我的生活・投資手帖</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500&family=Material+Icons+Round&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
       :root { --bg-color: #F7F7F2; --card-bg: #FFFFFF; --text-main: #404040; --text-sub: #7F7F7F; --border-color: #E0E0E0; --muji-red: #7F0019; --muji-green: #6c8c6e; --accent-brown: #8D8170; --btn-green: #597e5d; --table-header-bg: #f2f0eb; }
       * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -28,20 +26,19 @@
       .right-col { flex: 2; display: flex; flex-direction: column; gap: 10px; }
       .goal-card, .quote-card { flex: 1; margin-bottom: 0; }
       
-      /* --- 修改後的 Goal Card 樣式 (三層架構) --- */
-      .goal-card { padding: 0 !important; overflow: hidden; } /* 覆蓋預設 padding */
-      
-      .goal-header-group { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px 8px; border-bottom: 1px solid #eee; flex-shrink: 0; }
+      /* --- Goal Card Styles (Year/Season/Cycle) --- */
+      .goal-card { padding: 0 !important; overflow: hidden; }
+      .goal-header-group { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px 8px; border-bottom: 1px solid #eee; background: #fff; flex-shrink: 0; }
       .cycle-badge { background-color: var(--muji-red); color: white; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; font-weight: 500; letter-spacing: 0.5px; box-shadow: 0 1px 3px rgba(127,0,25,0.2); }
       
       .macro-goal-container { background-color: #fafafa; padding: 10px 15px; border-bottom: 1px solid #eee; flex-shrink: 0; }
       .macro-row { display: flex; align-items: baseline; margin-bottom: 6px; }
       .macro-row:last-child { margin-bottom: 0; }
       .macro-label { font-size: 0.7rem; color: #fff; background-color: var(--accent-brown); padding: 1px 6px; border-radius: 2px; margin-right: 8px; flex-shrink: 0; letter-spacing: 1px; font-weight: 400; }
-      .macro-label.season { background-color: #9aa5b1; /* 區分季度的灰色 */ }
+      .macro-label.season { background-color: #aeb6bf; }
       .macro-text { font-family: 'Noto Serif TC', serif; font-size: 0.85rem; color: var(--text-main); line-height: 1.4; letter-spacing: 0.5px; }
 
-      .cycle-list-container { flex: 1; overflow-y: auto; padding: 5px 15px 12px; min-height: 0; }
+      .cycle-list-container { flex: 1; overflow-y: auto; padding: 5px 15px 12px; background: #fff; min-height: 0; }
       .cycle-list-container::-webkit-scrollbar { width: 4px; } 
       .cycle-list-container::-webkit-scrollbar-thumb { background-color: #eee; border-radius: 4px; }
       
@@ -50,92 +47,27 @@
       .cycle-cat { color: var(--muji-red); font-weight: 600; margin-right: 8px; white-space: nowrap; font-size: 0.8rem; margin-top: 1px; min-width: 32px; }
       .cycle-desc { color: #555; font-size: 0.85rem; line-height: 1.5; }
 
-      /* --- Quote Card 樣式 --- */
       .quote-text { font-family: 'Noto Serif TC', serif; font-size: 0.85rem; line-height: 1.4; color: var(--accent-brown); flex: 1; display: flex; align-items: center; }
 
-      .dashboard-main-grid { display: grid; grid-template-columns: 1fr 55px 1fr 55px; gap: 10px; align-items: stretch; }
-      .dashboard-main-grid > * { min-width: 0; } 
-      .dashboard-main-grid .muji-card, .dashboard-main-grid .action-btn-container { margin-bottom: 0; height: 100%; }
-      .grid-left-block { grid-column: 1 / 3; } .grid-right-block { grid-column: 3 / 5; } .grid-full-width { grid-column: 1 / 5; }
-      .grid-c1 { grid-column: 1; } .grid-c2 { grid-column: 2; } .grid-c3 { grid-column: 3; } .grid-c4 { grid-column: 4; }
-      
-      .left-stack-wrapper { display: flex; flex-direction: column; gap: 10px; height: 100%; }
-      .left-stack-wrapper .muji-card:last-child { flex: 1; }
-      
-      .routine-wrapper { flex: 1; overflow-y: visible; min-height: 0; padding-right: 2px; display: flex; flex-direction: column; gap: 10px; }
-      .routine-wrapper .muji-card { margin-bottom: 0; border: none; box-shadow: none; padding: 0; }
-
-      .expense-display { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+      /* --- General & Form Styles --- */
       .action-btn-container { width: 55px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-decoration: none; }
       .action-btn-container:active { transform: scale(0.95); }
       .record-btn { background: var(--muji-red); color: white; }
-      .link-btn { background: var(--btn-green); color: white; }
       .btn-icon span { font-size: 26px; margin-bottom: 2px; }
       .btn-text { font-size: 0.75rem; letter-spacing: 1px; writing-mode: vertical-rl; text-orientation: upright; }
-      
-      .gratitude-compact { display: flex; flex-direction: row; gap: 8px; align-items: center; margin-top: auto; padding-top: 8px; border-top: 1px solid #f0f0f0; }
-      .input-underline { flex: 1; border: none; border-bottom: 1px solid #ddd; background: transparent; padding: 4px 0; font-size: 0.9rem; border-radius: 0; outline: none; transition: border-color 0.3s; }
-      .input-underline:focus { border-bottom-color: var(--accent-brown); }
-      .btn-mini-muji { padding: 6px 14px; background: #fff; border: 1px solid #d0d0d0; color: #777; font-size: 0.8rem; border-radius: 3px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; font-weight: 500; letter-spacing: 1px; }
-      .btn-mini-muji:active, .btn-mini-muji:hover { background: #fafafa; border-color: var(--accent-brown); color: var(--accent-brown); }
-      
-      #mini-gratitude-list { list-style: none; padding: 0; margin: 0 0 8px 0; display: flex; flex-direction: column; overflow: hidden; }
-      #mini-gratitude-list li { font-size: 0.85rem; color: #666; padding: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; display: flex; align-items: center; }
-      #mini-gratitude-list li .date { color: var(--accent-brown); font-size: 0.75rem; margin-right: 8px; font-family: 'Noto Sans TC', sans-serif; min-width: 40px; letter-spacing: 0.5px; font-weight: 500; }
 
-      .routine-section { border-bottom: 1px dashed #eee; padding-bottom: 15px; margin-bottom: 15px; transition: opacity 0.3s; }
-      .routine-section:last-child { border-bottom: none; margin-bottom: 0; }
-      .routine-header { font-size: 0.8rem; font-weight: 600; color: var(--accent-brown); margin-bottom: 10px; letter-spacing: 1px; text-transform: uppercase; }
-      .disabled-zone { opacity: 0.3; pointer-events: none; filter: grayscale(100%); background-color: #f0f0f0; } 
-      .goal-label { color: var(--muji-red); font-weight: bold; margin-right: 5px; }
-
-      .calendar-list, .journal-list { list-style: none; padding: 0; margin: 0; flex: 1; }
+      .calendar-list { list-style: none; padding: 0; margin: 0; flex: 1; }
       .calendar-list li { padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; width: 100%; overflow: hidden; }
       .cal-date { margin-right: 5px; font-weight: 600; color: var(--accent-brown); flex-shrink: 0; }
       .cal-title-wrapper { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; color: #555; }
       
-      .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #ddd; border-radius: 4px; }
-      .table-wrapper.scrollable { max-height: 300px; } .table-wrapper.auto-height { max-height: none; overflow-y: visible; height: 100%; }
-      .muji-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; white-space: nowrap; }
-      .muji-table td, .muji-table th { padding: 10px 12px; border: 1px solid #eee; color: var(--text-main); text-align: left; vertical-align: middle; }
-      .muji-table th { color: #888; font-weight: normal; position: sticky; top: 0; background: #fff; z-index: 10; border-bottom: 2px solid #ccc; }
-      #table-invest-calc tr:first-child th { background-color: var(--table-header-bg); color: var(--accent-brown); font-family: 'Noto Serif TC', serif; font-weight: 600; }
-      #table-invest-calc td:first-child, #table-invest-calc th:first-child { position: sticky; left: 0; background: #fafafa; z-index: 20; border-right: 2px solid #eee; width: 80px; min-width: 80px; text-align: center; }
-      #table-invest-calc th:first-child { z-index: 30; background: var(--table-header-bg); }
-      #table-profit { table-layout: fixed; width: 100%; }
-      #table-profit tr:nth-child(1) td, #table-profit tr:nth-child(2) td { background-color: var(--table-header-bg); color: var(--accent-brown); font-weight: 600; text-align: center; }
-      #table-profit td:first-child { background-color: #fafafa; font-weight: 600; color: var(--accent-brown); border-right: 2px solid #eee; position: sticky; left: 0; z-index: 20; width: 85px; min-width: 85px; max-width: 85px; text-align: left; white-space: normal; }
-      #table-profit td:not(:first-child) { text-align: center; width: auto; padding: 5px 2px; }
-      .text-right { text-align: right; font-family: monospace; letter-spacing: 0.5px; }
-      .text-pos { color: var(--muji-red) !important; font-weight: bold; } .text-neg { color: var(--muji-green) !important; font-weight: bold; } 
-      .journal-list li { padding: 12px 0; border-bottom: 1px dashed #eee; font-size: 0.9rem; line-height: 1.6; color: var(--text-main); }
-      .journal-list li:last-child { border-bottom: none; }
-      .journal-meta { font-size: 0.85rem; color: var(--accent-brown); font-weight: 600; font-family: 'Noto Serif TC', serif; margin-right: 5px; display: inline; }
-
-      .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
-      .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
-      .modal-content { background: white; width: 90%; max-width: 500px; padding: 25px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
-      .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-      .modal-header h3 { margin: 0; font-family: 'Noto Serif TC', serif; font-weight: 600; color: #333; }
-      .close-btn { cursor: pointer; color: #999; font-size: 24px; }
       input[type="text"], input[type="number"], input[type="date"], select, textarea { width: 100%; padding: 12px; font-size: 0.95rem; color: #333; border: 1px solid #ddd; border-radius: 3px; background-color: #fafafa; outline: none; box-sizing: border-box; transition: border-color 0.2s; }
       input:focus, textarea:focus, select:focus { border-color: #999; background: #fff; }
       .input-group { margin-bottom: 15px; }
       label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 4px; }
       .flex-row { display: flex; gap: 8px; } .flex-col { flex: 1; }
-      .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
-      .switch input { opacity: 0; width: 0; height: 0; }
-      .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px; }
-      .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-      input:checked + .slider { background-color: #555; }
-      input:checked + .slider:before { transform: translateX(18px); }
-      .chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
-      .muji-chip input { display: none; }
-      .muji-chip span { display: inline-block; padding: 6px 12px; border: 1px solid var(--border-color); color: var(--text-sub); font-size: 0.85rem; cursor: pointer; }
-      .muji-chip input:checked + span { background: var(--text-main); color: white; border-color: var(--text-main); }
       .btn-muji { width: 100%; padding: 15px; background: #333; color: white; border: none; font-size: 1rem; cursor: pointer; margin-top: 15px; border-radius: 3px; letter-spacing: 1px; transition: background 0.2s; }
       .btn-muji:active { background-color: #000; }
-      .btn-muji:disabled { background-color: #ccc; }
       
       .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: 1fr 1fr 1fr; height: 56px; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
       .nav-btn { background: none; border: none; color: #bbb; height: 100%; padding: 0; cursor: pointer; display: flex; justify-content: center; align-items: center; }
@@ -151,10 +83,6 @@
       .mini-select { font-size: 0.85rem; padding: 5px; height: 32px; }
       .tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
       .tech-item label { font-size: 0.75rem; margin-bottom: 2px; display: block; }
-      .journal-section-btn { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 15px; margin-top: 15px; background: #fff; border: 1px solid #ddd; border-radius: 4px; text-align: left; color: #555; font-size: 1rem; cursor: pointer; }
-      .journal-section-btn:active { background: #f9f9f9; }
-      .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #eee; }
-      #toast { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 0.9rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 3000; white-space: nowrap; }
       @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
     </style>
 </head>
@@ -174,6 +102,7 @@
                     <li><span class="cal-date">--:--</span><span class="cal-title-wrapper">載入中...</span></li>
                 </ul>
             </div>
+            
             <div class="right-col">
                 <div class="muji-card goal-card">
                     <div class="goal-header-group">
@@ -195,15 +124,15 @@
                     <div class="cycle-list-container" id="goal-cycle-list">
                         <div class="cycle-list-item">
                             <span class="cycle-cat">工作</span>
-                            <span class="cycle-desc">英語提案翻譯</span>
+                            <span class="cycle-desc">英語提案翻譯與潤飾</span>
                         </div>
                         <div class="cycle-list-item">
                             <span class="cycle-cat">生活</span>
-                            <span class="cycle-desc">Pixel 10 測試</span>
+                            <span class="cycle-desc">Pixel 10 設定與測試</span>
                         </div>
                         <div class="cycle-list-item">
                             <span class="cycle-cat">習慣</span>
-                            <span class="cycle-desc">Air Shot 紀錄</span>
+                            <span class="cycle-desc">Air Shot 紀錄確認</span>
                         </div>
                     </div>
                 </div>
@@ -214,9 +143,6 @@
                 </div>
             </div>
           </div>
-          
-          <div class="dashboard-main-grid">
-               </div>
       </div>
 
       <div id="tab-operation" class="tab-content">
@@ -233,4 +159,75 @@
             </div>
             <form id="stockForm">
               <div class="input-group"><label>日期</label><input type="date" id="s_date" required></div>
-              <div class="flex-row"><div class="flex-col input-group"><label>代號</label><input type="text" id="s_code" placeholder="2330" required inputmode="num
+              <div class="flex-row"><div class="flex-col input-group"><label>代號</label><input type="text" id="s_code" placeholder="2330" required inputmode="numeric"></div><div class="flex-col input-group"><label>名稱</label><input type="text" id="s_name" placeholder="台積電" required></div></div>
+              <div class="flex-row"><div class="flex-col input-group"><label>股數</label><input type="number" id="s_shares" placeholder="1000" inputmode="numeric"></div><div class="flex-col input-group"><label>價格</label><input type="number" id="s_price" step="0.01" inputmode="decimal"></div></div>
+              <div class="input-group"><label>交割價</label><input type="number" id="s_settlement" step="1" inputmode="decimal"></div>
+              <div class="flex-row"><div class="flex-col input-group"><label>趨勢</label><select id="s_trend"><option value="多">多</option><option value="空">空</option></select></div><div class="flex-col input-group"><label>動作</label><select id="s_action" style="background-color: #fffef0;"><option value="進場">進場</option><option value="出場">出場</option></select></div></div>
+              <div class="input-group"><label id="reasonLabel" style="color: #d35400;">進場條件</label><select id="s_reason" style="border-color: #e6b0aa;"></select></div>
+              <details>
+                  <summary>技術分析 (選填)</summary>
+                  <div class="tech-grid">
+                      <div class="tech-item"><label>周趨勢</label><select id="s_weekTrend" class="mini-select"><option></option><option>多</option><option>空</option><option>盤整</option></select></div>
+                      <div class="tech-item"><label>日趨勢</label><select id="s_dayTrend" class="mini-select"><option></option><option>多</option><option>空</option><option>盤整</option></select></div>
+                      <div class="tech-item"><label>位置</label><select id="s_position" class="mini-select"><option></option><option>起漲</option><option>走勢高檔</option><option>趨勢高檔</option><option>頭部</option><option>行進間</option><option>起跌</option><option>走勢低檔</option><option>趨勢低檔</option><option>底部</option></select></div>
+                      <div class="tech-item"><label>成交量</label><select id="s_volume" class="mini-select"><option></option><option>價↑量↑</option><option>價↑量-</option><option>價↑量↓</option><option>價↓量↑</option><option>價↓量-</option><option>價量↓</option></select></div>
+                      <div class="tech-item"><label>20T</label><select id="s_ma20t" class="mini-select"><option></option><option>↑20T↑</option><option>↑20T</option><option>-20T-</option><option>↓20T↑</option></select></div>
+                      <div class="tech-item"><label>備註</label><input type="text" class="mini-select" placeholder="..."></div>
+                  </div>
+              </details>
+              <button type="submit" class="btn-muji">記錄波段</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-journal" class="tab-content">
+          <div class="muji-title">生活隨筆</div>
+          <div class="muji-card" style="text-align:center; padding:30px; color:#aaa;">
+              功能開發中...
+          </div>
+      </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <button class="nav-btn active" onclick="switchTab('dashboard')"><span class="material-icons-round">dashboard</span></button>
+        <button class="nav-btn" onclick="switchTab('operation')"><span class="material-icons-round">edit_note</span></button>
+        <button class="nav-btn" onclick="switchTab('journal')"><span class="material-icons-round">book</span></button>
+    </nav>
+
+    <div id="toast">訊息</div>
+
+    <script>
+       // 初始化日期
+       const now = new Date();
+       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+       document.getElementById('header-date').innerText = (now.getMonth()+1) + '.' + now.getDate();
+       document.getElementById('header-day').innerText = days[now.getDay()];
+
+       // Tab 切換
+       function switchTab(tabId) {
+           document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+           document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+           
+           document.getElementById('tab-' + tabId).classList.add('active');
+           
+           const btns = document.querySelectorAll('.nav-btn');
+           if(tabId === 'dashboard') btns[0].classList.add('active');
+           if(tabId === 'operation') btns[1].classList.add('active');
+           if(tabId === 'journal') btns[2].classList.add('active');
+       }
+
+       // 操作模式切換
+       function selectMode(mode) {
+           document.getElementById('op-selection').classList.add('hidden');
+           if(mode === 'swing') document.getElementById('form-swing').classList.remove('hidden');
+           // 如果有當沖表單可在此擴充
+       }
+       
+       function backToSelection() {
+           document.getElementById('form-swing').classList.add('hidden');
+           document.getElementById('op-selection').classList.remove('hidden');
+       }
+    </script>
+</body>
+</html>
