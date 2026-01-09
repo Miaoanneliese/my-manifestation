@@ -370,6 +370,39 @@
                         <div style="font-size: 0.75rem; color: #999; margin-top: 5px;">*開啟後，運動與保養將進入簡化模式。</div>
                     </div>
 
+                    <!-- NEW: Habit Section -->
+                    <div class="routine-section">
+                         <div class="routine-header">HABIT CHECK</div>
+                         <div class="toggle-row">
+                             <span id="lbl_hab_1" style="font-size: 0.9rem;">讀取中...</span>
+                             <label class="switch">
+                                 <input type="checkbox" id="j_q86">
+                                 <span class="slider round"></span>
+                             </label>
+                         </div>
+                         <div class="toggle-row">
+                             <span id="lbl_hab_2" style="font-size: 0.9rem;">讀取中...</span>
+                             <label class="switch">
+                                 <input type="checkbox" id="j_q87">
+                                 <span class="slider round"></span>
+                             </label>
+                         </div>
+                         <div class="toggle-row">
+                             <span id="lbl_hab_3" style="font-size: 0.9rem;">讀取中...</span>
+                             <label class="switch">
+                                 <input type="checkbox" id="j_q88">
+                                 <span class="slider round"></span>
+                             </label>
+                         </div>
+                         <div class="toggle-row">
+                             <span id="lbl_hab_4" style="font-size: 0.9rem;">讀取中...</span>
+                             <label class="switch">
+                                 <input type="checkbox" id="j_q90">
+                                 <span class="slider round"></span>
+                             </label>
+                         </div>
+                    </div>
+
                     <div class="routine-section">
                         <div class="routine-header">DAILY REVIEW</div>
                         <div class="input-group">
@@ -567,6 +600,12 @@
             document.getElementById('goal-wealth').innerText = data.wealth || '-';
             document.getElementById('goal-skills').innerText = data.skills || '-';
             document.getElementById('goal-life').innerText = data.life || '-';
+            
+            // New: Populate Habit Labels from Backend Data
+            if(document.getElementById('lbl_hab_1')) document.getElementById('lbl_hab_1').innerText = data.habit_1 || '習慣 1';
+            if(document.getElementById('lbl_hab_2')) document.getElementById('lbl_hab_2').innerText = data.habit_2 || '習慣 2';
+            if(document.getElementById('lbl_hab_3')) document.getElementById('lbl_hab_3').innerText = data.habit_3 || '習慣 3';
+            if(document.getElementById('lbl_hab_4')) document.getElementById('lbl_hab_4').innerText = data.habit_4 || '習慣 4';
             
             if(data.questions && data.questions.length > 0) {
                 applyFormConfig(data.questions);
@@ -815,7 +854,6 @@
             data.q12 = document.getElementById('j_q12').value; 
             pushToFirebaseQueue('journal', data, "盤中紀錄已紀錄", () => { closeJournalModal(type); btn.disabled = false; });
         } 
-        // 舊版 "end" 已刪除，新的整合版邏輯如下：
         else if (type === 'end') { 
             // 1. 準備 Daily Routine 數據 (對應 Practice Report)
             var routineData = {
@@ -832,10 +870,15 @@
             };
 
             // 2. 準備 Journal 數據 (對應 顯化日記)
+            // 修改重點：j_q86, j_q87, j_q88, j_q90 改為傳送布林值 (true/false)
             var journalData = {
                 journalType: 'end',
                 date: document.getElementById('j_date_end').value,
-                q89: document.getElementById('j_q89').value, // 為了相容，重複送出
+                q86: document.getElementById('j_q86').checked,
+                q87: document.getElementById('j_q87').checked,
+                q88: document.getElementById('j_q88').checked,
+                q89: document.getElementById('j_q89').value, 
+                q90: document.getElementById('j_q90').checked, // 依需求確保它是布林值
                 q91: document.getElementById('j_q91').value,
                 q93: document.getElementById('j_q93').value,
                 q94: document.getElementById('j_q94').value,
