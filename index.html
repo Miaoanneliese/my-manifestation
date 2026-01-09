@@ -273,27 +273,32 @@
                 </div>
                 
                 <div class="muji-card" style="display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 0;">
+                    <!-- Header: 只顯示 Cycle ID -->
                     <div class="goal-header-group">
                          <div class="card-label" style="margin:0;">目標實踐</div>
-                         <div class="cycle-badge" id="cycle-id">Cycle Loading...</div>
+                         <div class="cycle-badge" id="cycle-id">Cycle ...</div>
                     </div>
     
+                    <!-- 內容: 改為三行條列 (年 / 季 / 周) -->
                     <div class="macro-goal-container">
-                        <div class="split-container">
-                            <div class="split-block">
-                                <span class="macro-label">年</span>
-                                <span id="goal-year" class="macro-text" onclick="toggleText(this)">...</span>
-                            </div>
-                            <div class="split-block">
-                                <span class="macro-label">季</span>
-                                <span id="goal-season" class="macro-text" onclick="toggleText(this)">...</span>
-                            </div>
+                        <!-- 第一行: 年 -->
+                        <div class="macro-row">
+                            <span class="macro-label">年</span>
+                            <span id="goal-year" class="macro-text" onclick="toggleText(this)">...</span>
                         </div>
                         
+                        <!-- 第二行: 季 -->
+                        <div class="macro-row">
+                            <span class="macro-label">季</span>
+                            <span id="goal-season" class="macro-text" onclick="toggleText(this)">...</span>
+                        </div>
+                        
+                        <!-- 第三行: 周 (日期範圍 + 目標) -->
                         <div class="macro-row">
                             <span class="macro-label">周</span>
-                            <span id="cycle-range-display" class="date-suffix"></span>
-                            <span id="goal-weekly" class="macro-text" onclick="toggleText(this)" style="margin-left: 8px;">...</span>
+                            <!-- 日期範圍顯示在這裡 -->
+                            <span id="cycle-range-display" class="date-suffix" style="margin-right: 8px; color: #999; font-size: 0.75rem; font-weight: 500;"></span>
+                            <span id="goal-weekly" class="macro-text" onclick="toggleText(this)">...</span>
                         </div>
                     </div>
     
@@ -422,7 +427,7 @@
                             <label id="lbl_sport_execution">運動執行</label>
                             <select id="sport_execution" class="mini-select">
                                 <option value="">未執行</option>
-                                <option value="Plan B">抬腿</option>
+                                <option value="Plan B">Plan B</option>
                                 </select>
                         </div>
                         <div class="input-group">
@@ -552,12 +557,15 @@
         .then(response => response.json())
         .then(data => {
             let cycleText = `Cycle ${data.cycle_id || '?'}`;
-            if(data.cycle_range) cycleText += ` (${data.cycle_range})`;
             document.getElementById('cycle-id').innerText = cycleText;
 
             document.getElementById('goal-year').innerText = data.year_goal || '尚未設定年度目標';
             document.getElementById('goal-season').innerText = data.season_goal || '尚未設定季度目標';
             document.getElementById('goal-weekly').innerText = data.cycle_goal || '尚未設定周目標';
+            
+            if(document.getElementById('cycle-range-display')) {
+                document.getElementById('cycle-range-display').innerText = data.cycle_range || '';
+            }
 
             document.getElementById('goal-career').innerText = data.career || '-';
             document.getElementById('goal-health').innerText = data.health || '-';
@@ -997,4 +1005,3 @@
     </script>
 </body>
 </html>
-
