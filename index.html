@@ -282,19 +282,19 @@
                     <!-- 內容: 改為三行條列 (年 / 季 / 周) -->
                     <div class="macro-goal-container">
                         <!-- 第一行: 年 -->
-                        <div class="macro-row">
-                            <span class="macro-label">年</span>
-                            <span id="goal-year" class="macro-text" onclick="toggleText(this)">...</span>
-                        </div>
-                        
-                        <!-- 第二行: 季 -->
-                        <div class="macro-row">
-                            <span class="macro-label">季</span>
-                            <span id="goal-season" class="macro-text" onclick="toggleText(this)">...</span>
+                        <div class="macro-row" style="display: flex; gap: 10px;">
+                            <div style="flex: 1; display: flex; align-items: baseline; min-width: 0;">
+                                <span class="macro-label">年</span>
+                                <span id="goal-year" class="macro-text" onclick="toggleText(this)">...</span>
+                            </div>
+                            <div style="flex: 1; display: flex; align-items: baseline; min-width: 0;">
+                                <span class="macro-label">季</span>
+                                <span id="goal-season" class="macro-text" onclick="toggleText(this)">...</span>
+                            </div>
                         </div>
                         
                         <!-- 第三行: 周 (日期範圍 + 目標) -->
-                        <div class="macro-row">
+                        <div class="macro-row" style="margin-top: 8px;">
                             <span class="macro-label">周</span>
                             <!-- 日期範圍顯示在這裡 -->
                             <span id="cycle-range-display" class="date-suffix" style="margin-right: 8px; color: #999; font-size: 0.75rem; font-weight: 500;"></span>
