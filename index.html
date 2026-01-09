@@ -1,1062 +1,512 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我的生活・投資手帖</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500&family=Material+Icons+Round&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <style>
-      /* --- Muji 風格色系 --- */
-      :root { 
-          --bg-color: #F9F9F6; 
-          --card-bg: #FFFFFF; 
-          --text-main: #4a4a4a; 
-          --text-sub: #999999; 
-          --border-color: #EBEBEB;    
-          --muji-red: #8a1c1c; 
-          --muji-green: #6c8c6e; 
-          --accent-brown: #8D8170; 
-          --tag-bg: #E6E4E0;
-          --btn-green: #597e5d; 
-          --table-header-bg: #f4f4f0; 
-      }
-      
-      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-      body { margin: 0; font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; letter-spacing: 0.03em; }
-      header { background-color: var(--bg-color); padding: 25px 20px 10px; }
-      
-      .date-weather-box { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--text-main); padding-bottom: 10px; }
-      .current-date { font-family: 'Noto Serif TC', serif; font-size: 1.5rem; font-weight: 900; color: #333; }
-      .day-tag { font-size: 0.9rem; margin-left: 5px; color: var(--text-sub); }
-      .weather-info { display: flex; align-items: center; font-size: 0.9rem; color: var(--text-sub); gap: 5px; }
-      
-      main { padding: 20px; }
-      
-      .muji-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 3px; padding: 15px 20px; margin-bottom: 15px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; }
-      .card-label { font-size: 0.7rem; color: var(--text-sub); margin-bottom: 10px; letter-spacing: 1.5px; font-weight: 500; text-transform: uppercase; }
-      .muji-title { font-family: 'Noto Serif TC', serif; font-size: 1.4rem; margin: 10px 0 20px; text-align: center; color: var(--muji-red); }
-      .big-number { font-size: 1.6rem; font-weight: 300; font-family: 'Noto Serif TC', serif; color: #333; }
-      
-      .dashboard-grid { display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch; }
-      .schedule-card { flex: 3; margin-bottom: 0; }
-      .right-col { flex: 2; display: flex; flex-direction: column; gap: 10px; }
-      .goal-card, .quote-card { flex: 1; margin-bottom: 0; }
-      .goal-text-read { font-family: 'Noto Serif TC', serif; color: var(--text-main); font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; flex: 1; overflow-y: auto; scrollbar-width: thin; max-height: 100px; }
-      .quote-text { font-family: 'Noto Serif TC', serif; font-size: 0.85rem; line-height: 1.6; color: var(--accent-brown); flex: 1; display: flex; align-items: center; }
+// === 系統設定 ===
+var SPREADSHEET_ID = '1vRIp7aP_Fz8fCClQ8PzQs-412KsM_uvyY3WsEqUedxg'; // 記帳/投資表
+var GOAL_SPREADSHEET_ID = '14ezIQwSe6rpl7iPVYL80RKpAB_N-xqaZ-oiXZHqn_nY'; // 目標/紀錄表
+var FIREBASE_URL = "https://manifestation-fc95b-default-rtdb.asia-southeast1.firebasedatabase.app/";
+var FIREBASE_SECRET = "k6qAKfvcw2eqPcluPZO5JUyIcwLp6j31AM8jYNWo"; 
 
-      .dashboard-main-grid { display: grid; grid-template-columns: 1fr 55px 1fr 55px; gap: 10px; align-items: stretch; }
-      .dashboard-main-grid > * { min-width: 0; } 
-      .dashboard-main-grid .muji-card, .dashboard-main-grid .action-btn-container { margin-bottom: 0; height: 100%; }
-      .grid-left-block { grid-column: 1 / 3; } .grid-right-block { grid-column: 3 / 5; } .grid-full-width { grid-column: 1 / 5; }
-      .grid-c1 { grid-column: 1; } .grid-c2 { grid-column: 2; } .grid-c3 { grid-column: 3; } .grid-c4 { grid-column: 4; }
-      
-      .left-stack-wrapper { display: flex; flex-direction: column; gap: 10px; height: 100%; }
-      .left-stack-wrapper .muji-card:last-child { flex: 1; }
-      
-      .goal-text-read::-webkit-scrollbar { width: 4px; } .goal-text-read::-webkit-scrollbar-thumb { background-color: #eee; border-radius: 4px; }
-      .routine-wrapper { flex: 1; overflow-y: visible; min-height: 0; padding-right: 2px; display: flex; flex-direction: column; gap: 10px; }
-      .routine-wrapper .muji-card { margin-bottom: 0; border: none; box-shadow: none; padding: 0; }
+// 行事曆設定
+var CALENDARS_CONFIG = [
+  { id: '2ioc27hhmbm38q2rkmbitk9ro4@group.calendar.google.com', color: '#6c8c6e' }, // 綠
+  { id: '1f8v85pbk1d911eki8osttjvdk@group.calendar.google.com', color: '#d6c68b' }, // 黃
+  { id: 'stopannelies@gmail.com', color: '#d99598' } // 桃紅
+];
 
-      .expense-display { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
-      .action-btn-container { width: 55px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); text-decoration: none; background: #fff; border: 1px solid var(--border-color); transition: all 0.2s; }
-      .action-btn-container:active { transform: scale(0.95); background: #f5f5f5; }
-      .record-btn { background: var(--muji-red); color: white; border-color: var(--muji-red); }
-      .link-btn { background: var(--btn-green); color: white; border-color: var(--btn-green); }
-      .btn-icon span { font-size: 26px; margin-bottom: 2px; }
-      .btn-text { font-size: 0.75rem; letter-spacing: 1px; writing-mode: vertical-rl; text-orientation: upright; }
-      
-      .gratitude-compact { display: flex; flex-direction: row; gap: 8px; align-items: center; margin-top: auto; padding-top: 8px; border-top: 1px solid #f0f0f0; }
-      .input-underline { flex: 1; border: none; border-bottom: 1px solid #ddd; background: transparent; padding: 4px 0; font-size: 0.9rem; border-radius: 0; outline: none; transition: border-color 0.3s; }
-      .input-underline:focus { border-bottom-color: var(--accent-brown); }
-      .btn-mini-muji { padding: 6px 14px; background: #fff; border: 1px solid #d0d0d0; color: #777; font-size: 0.8rem; border-radius: 2px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; font-weight: 500; letter-spacing: 1px; }
-      .btn-mini-muji:active, .btn-mini-muji:hover { background: #fafafa; border-color: var(--accent-brown); color: var(--accent-brown); }
-      
-      #mini-gratitude-list { list-style: none; padding: 0; margin: 0 0 8px 0; display: flex; flex-direction: column; overflow: hidden; }
-      #mini-gratitude-list li { font-size: 0.85rem; color: #666; padding: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.6; display: flex; align-items: center; }
-      #mini-gratitude-list li .date { color: var(--accent-brown); font-size: 0.75rem; margin-right: 8px; font-family: 'Noto Sans TC', sans-serif; min-width: 40px; letter-spacing: 0.5px; font-weight: 500; }
-
-      .routine-section { border-bottom: 1px dashed #eee; padding-bottom: 15px; margin-bottom: 15px; transition: opacity 0.3s; }
-      .routine-section:last-child { border-bottom: none; margin-bottom: 0; }
-      .routine-header { font-size: 0.8rem; font-weight: 600; color: var(--accent-brown); margin-bottom: 10px; letter-spacing: 1px; text-transform: uppercase; }
-      .disabled-zone { opacity: 0.3; pointer-events: none; filter: grayscale(100%); background-color: #f0f0f0; } 
-      .goal-label { color: var(--muji-red); font-weight: bold; margin-right: 5px; }
-
-      .calendar-list, .journal-list { list-style: none; padding: 0; margin: 0; flex: 1; }
-      .calendar-list li { padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; width: 100%; overflow: hidden; }
-      .cal-date { margin-right: 5px; font-weight: 600; color: var(--accent-brown); flex-shrink: 0; }
-      .cal-title-wrapper { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; color: #555; }
-      
-      .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #ddd; border-radius: 4px; }
-      .table-wrapper.scrollable { max-height: 300px; } .table-wrapper.auto-height { max-height: none; overflow-y: visible; height: 100%; }
-      .muji-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; white-space: nowrap; }
-      .muji-table td, .muji-table th { padding: 10px 12px; border: 1px solid #eee; color: var(--text-main); text-align: left; vertical-align: middle; }
-      .muji-table th { color: #888; font-weight: normal; position: sticky; top: 0; background: #fff; z-index: 10; border-bottom: 2px solid #ccc; }
-      #table-invest-calc tr:first-child th { background-color: var(--table-header-bg); color: var(--accent-brown); font-family: 'Noto Serif TC', serif; font-weight: 600; }
-      #table-invest-calc td:first-child, #table-invest-calc th:first-child { position: sticky; left: 0; background: #fafafa; z-index: 20; border-right: 2px solid #eee; width: 80px; min-width: 80px; text-align: center; }
-      #table-invest-calc th:first-child { z-index: 30; background: var(--table-header-bg); }
-      #table-profit { table-layout: fixed; width: 100%; }
-      #table-profit tr:nth-child(1) td, #table-profit tr:nth-child(2) td { background-color: var(--table-header-bg); color: var(--accent-brown); font-weight: 600; text-align: center; }
-      #table-profit td:first-child { background-color: #fafafa; font-weight: 600; color: var(--accent-brown); border-right: 2px solid #eee; position: sticky; left: 0; z-index: 20; width: 85px; min-width: 85px; max-width: 85px; text-align: left; white-space: normal; }
-      #table-profit td:not(:first-child) { text-align: center; width: auto; padding: 5px 2px; }
-      .text-right { text-align: right; font-family: monospace; letter-spacing: 0.5px; }
-      .text-pos { color: var(--muji-red) !important; font-weight: bold; } .text-neg { color: var(--muji-green) !important; font-weight: bold; } 
-      .journal-list li { padding: 12px 0; border-bottom: 1px dashed #eee; font-size: 0.9rem; line-height: 1.6; color: var(--text-main); }
-      .journal-list li:last-child { border-bottom: none; }
-      .journal-meta { font-size: 0.85rem; color: var(--accent-brown); font-weight: 600; font-family: 'Noto Serif TC', serif; margin-right: 5px; display: inline; }
-
-      .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
-      .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
-      .modal-content { background: white; width: 90%; max-width: 500px; padding: 25px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
-      .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-      .modal-header h3 { margin: 0; font-family: 'Noto Serif TC', serif; font-weight: 600; color: #333; }
-      .close-btn { cursor: pointer; color: #999; font-size: 24px; }
-      input[type="text"], input[type="number"], input[type="date"], select, textarea { width: 100%; padding: 12px; font-size: 0.95rem; color: #333; border: 1px solid #ddd; border-radius: 2px; background-color: #fafafa; outline: none; box-sizing: border-box; transition: border-color 0.2s; }
-      input:focus, textarea:focus, select:focus { border-color: #999; background: #fff; }
-      .input-group { margin-bottom: 15px; }
-      label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 4px; }
-      .flex-row { display: flex; gap: 8px; } .flex-col { flex: 1; }
-      .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
-      .switch input { opacity: 0; width: 0; height: 0; }
-      .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px; }
-      .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-      input:checked + .slider { background-color: #555; }
-      input:checked + .slider:before { transform: translateX(18px); }
-      .chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
-      .muji-chip input { display: none; }
-      .muji-chip span { display: inline-block; padding: 6px 12px; border: 1px solid var(--border-color); color: var(--text-sub); font-size: 0.85rem; cursor: pointer; border-radius: 2px; }
-      .muji-chip input:checked + span { background: var(--text-main); color: white; border-color: var(--text-main); }
-      .btn-muji { width: 100%; padding: 15px; background: #333; color: white; border: none; font-size: 1rem; cursor: pointer; margin-top: 15px; border-radius: 2px; letter-spacing: 1px; transition: background 0.2s; }
-      .btn-muji:active { background-color: #000; }
-      .btn-muji:disabled { background-color: #ccc; }
-      
-      .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: 1fr 1fr 1fr; height: 56px; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
-      .nav-btn { background: none; border: none; color: #bbb; height: 100%; padding: 0; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-      .nav-btn.active { color: #444; }
-      .nav-btn .material-icons-round { font-size: 28px; }
-      
-      .tab-content { display: none; } .tab-content.active { display: block; animation: fadeIn 0.3s; }
-      .mode-select-container { display: flex; flex-direction: column; gap: 10px; padding: 20px; justify-content: center; height: 50vh; }
-      .mode-btn { padding: 15px; font-size: 1rem; border: 1px solid #ddd; background: #fff; border-radius: 4px; color: #555; text-align: center; cursor: pointer; display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 10px; }
-      .mode-btn:active { background: #f0f0f0; }
-      .operation-container { padding-bottom: 70px; max-width: 600px; margin: 0 auto; }
-      .hidden { display: none !important; }
-      .mini-select { font-size: 0.85rem; padding: 5px; height: 32px; }
-      .tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-      .tech-item label { font-size: 0.75rem; margin-bottom: 2px; display: block; }
-      .journal-section-btn { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 15px; margin-top: 15px; background: #fff; border: 1px solid #ddd; border-radius: 4px; text-align: left; color: #555; font-size: 1rem; cursor: pointer; }
-      .journal-section-btn:active { background: #f9f9f9; }
-      .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #eee; }
-      #toast { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 0.9rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 3000; white-space: nowrap; }
-      @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
-
-      .goal-header-group { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px 8px; border-bottom: 1px solid #f0f0f0; }
-      .cycle-badge { background-color: var(--muji-red); color: white; font-size: 0.75rem; padding: 2px 10px; border-radius: 12px; font-weight: 500; letter-spacing: 0.5px; }
-      
-      .macro-goal-container { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; background-color: #fff; }
-      
-      .macro-row { display: flex; align-items: baseline; margin-bottom: 10px; width: 100%; }
-      .macro-row:last-child { margin-bottom: 0; }
-      .split-container { display: flex; width: 100%; gap: 15px; margin-bottom: 10px; }
-      .split-block { flex: 1; display: flex; align-items: baseline; min-width: 0; } 
-      
-      .macro-label { font-size: 0.7rem; color: #555; background-color: var(--tag-bg); padding: 2px 6px; border-radius: 2px; margin-right: 8px; flex-shrink: 0; font-weight: 500; }
-      .macro-text { font-size: 0.85rem; color: var(--text-main); line-height: 1.4; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: color 0.2s; }
-      .macro-text:active { color: #888; }
-      .macro-text.expanded { white-space: normal; overflow: visible; word-break: break-all; }
-      .date-suffix { font-size: 0.75rem; color: #aaa; margin-left: 6px; letter-spacing: 0; }
-
-      .cycle-list-container { flex: 1; overflow-y: auto; padding: 8px 15px 12px; }
-      .cycle-list-item { padding: 8px 0; border-bottom: 1px dashed #eee; display: flex; align-items: flex-start; }
-      .cycle-list-item:last-child { border-bottom: none; }
-      .cycle-cat { color: var(--muji-red); font-weight: 600; margin-right: 8px; white-space: nowrap; font-size: 0.8rem; margin-top: 1px; min-width: 32px; }
-      .cycle-desc { color: #555; font-size: 0.85rem; line-height: 1.5; }
-    </style>
-</head>
-<body>
-    <header>
-      <div class="date-weather-box">
-        <div class="current-date"><span id="header-date">...</span> <span id="header-day" class="day-tag">...</span></div>
-        <div class="weather-info" id="weather-display"><span class="material-icons-round">wb_sunny</span> <span>讀取中...</span></div>
-      </div>
-    </header>
-    <main id="app">
-      <div id="tab-operation" class="tab-content">
-        <div class="muji-title">操作紀錄</div>
-        <div id="op-selection" class="mode-select-container">
-          <div class="mode-btn" onclick="selectMode('swing')"><span class="material-icons-round">trending_up</span> 波段操作</div>
-          <div class="mode-btn" onclick="selectMode('daytrade')"><span class="material-icons-round">flash_on</span> 當沖交易</div>
-        </div>
-        <div id="form-swing" class="operation-container hidden">
-          <div class="muji-card">
-            <div style="display:flex; align-items:center; margin-bottom:15px; color:#888; font-size:0.9rem; cursor:pointer;" onclick="backToSelection()">
-               <span class="material-icons-round" style="font-size:18px; margin-right:4px;">arrow_back</span> 返回
-            </div>
-            <form id="stockForm">
-              <div class="input-group"><label>日期</label><input type="date" id="s_date" required></div>
-              <div class="flex-row"><div class="flex-col input-group"><label>代號</label><input type="text" id="s_code" placeholder="2330" required inputmode="numeric"></div><div class="flex-col input-group"><label>名稱</label><input type="text" id="s_name" placeholder="台積電" required></div></div>
-              <div class="flex-row"><div class="flex-col input-group"><label>股數</label><input type="number" id="s_shares" placeholder="1000" inputmode="numeric"></div><div class="flex-col input-group"><label>價格</label><input type="number" id="s_price" step="0.01" inputmode="decimal"></div></div>
-              <div class="input-group"><label>交割價</label><input type="number" id="s_settlement" step="1" inputmode="decimal"></div>
-              <div class="flex-row"><div class="flex-col input-group"><label>趨勢</label><select id="s_trend"><option value="多">多</option><option value="空">空</option></select></div><div class="flex-col input-group"><label>動作</label><select id="s_action" onchange="updateReasonOptions()" style="background-color: #fffef0;"><option value="進場">進場</option><option value="出場">出場</option></select></div></div>
-              <div class="input-group"><label id="reasonLabel" style="color: #d35400;">進場條件</label><select id="s_reason" style="border-color: #e6b0aa;"></select></div>
-              <details><summary>技術分析 (選填)</summary><div class="tech-grid"><div class="tech-item"><label>周趨勢</label><select id="s_weekTrend" class="mini-select"><option></option><option>多</option><option>空</option><option>盤整</option></select></div><div class="tech-item"><label>日趨勢</label><select id="s_dayTrend" class="mini-select"><option></option><option>多</option><option>空</option><option>盤整</option></select></div><div class="tech-item"><label>位置</label><select id="s_position" class="mini-select"><option></option><option>起漲</option><option>走勢高檔</option><option>趨勢高檔</option><option>頭部</option><option>行進間</option><option>起跌</option><option>走勢低檔</option><option>趨勢低檔</option><option>底部</option></select></div><div class="tech-item"><label>成交量</label><select id="s_volume" class="mini-select"><option></option><option>價↑量↑</option><option>價↑量-</option><option>價↑量↓</option><option>價↓量↑</option><option>價↓量-</option><option>價量↓</option></select></div><div class="tech-item"><label>20T</label><select id="s_ma20t" class="mini-select"><option></option><option>↑20T↑</option><option>↑20T</option><option>-20T-</option><option>↓20T↑</option></select></div><div class="tech-item"><label>均線</label><select id="s_maArrangement" class="mini-select"><option></option><option>3線多排</option><option>4線多排</option><option>3線空排</option><option>4線空排</option></select></div><div class="tech-item"><label>KD</label><select id="s_kd" class="mini-select"><option></option><option>黃金交叉</option><option>多个</option><option>多</option><option>死亡交叉</option><option>空↑</option><option>空↓</option></select></div><div class="tech-item"><label>MACD</label><select id="s_macd" class="mini-select"><option></option><option>紅↑</option><option>紅↓</option><option>綠↑</option><option>綠↓</option></select></div></div><div class="tech-item" style="margin-top:8px;"><label>壓力</label><select id="s_pressure" class="mini-select"><option></option><option>波浪型態的高點(頭)</option><option>密集盤整區</option><option>盤整區的上/下頸線</option><option>上升/下降切線</option><option>移動平均線(均線)</option><option>跳空缺口</option><option>大量成交的紅黑K棒</option><option>心理預期</option></select></div><div class="tech-item" style="margin-top:8px;"><label>支撐</label><select id="s_support" class="mini-select"><option></option><option>波浪型態的低點(底)</option><option>密集盤整區</option><option>盤整區的上/下頸線</option><option>上升/下降切線</option><option>移動平均線(均線)</option><option>跳空缺口</option><option>大量成交的紅黑K棒</option><option>心理預期</option></select></div></details>
-              <button type="button" class="btn-muji" onclick="submitStock()">送出紀錄</button>
-            </form>
-          </div>
-        </div>
-        <div id="form-daytrade" class="operation-container hidden">
-          <div class="muji-card">
-            <div style="display:flex; align-items:center; margin-bottom:15px; color:#888; font-size:0.9rem; cursor:pointer;" onclick="backToSelection()">
-               <span class="material-icons-round" style="font-size:18px; margin-right:4px;">arrow_back</span> 返回
-            </div>
-            <form id="dayTradeForm">
-              <div class="input-group"><label>日期</label><input type="date" id="d_date" required></div>
-              <div class="flex-row"><div class="flex-col input-group"><label>代號</label><input type="text" id="d_code" placeholder="2330" required inputmode="numeric"></div><div class="flex-col input-group"><label>名稱</label><input type="text" id="d_name" placeholder="台積電" required></div></div>
-              <div class="input-group"><label>操作趨勢</label><select id="d_trend" onchange="updateDayTradeReason()" style="background-color: #fffef0;"><option value="多">多</option><option value="空">空</option></select></div>
-              <div class="input-group"><label>鎖定原因</label><select id="d_reason" style="border-color: #e6b0aa;"></select></div>
-              <details open><summary>進場觀察</summary><div class="tech-grid"><div class="tech-item"><label>前日20T</label><select id="d_prev20t" class="mini-select"><option></option><option>↑20T↑</option><option>↑20T↓</option><option>↓20T↓</option><option>↓20T↑</option></select></div><div class="tech-item"><label>前日量</label><select id="d_prevVol" class="mini-select"><option></option><option>↑</option><option>↓</option></select></div><div class="tech-item"><label>前日KD</label><select id="d_prevKd" class="mini-select"><option></option><option>黃金交叉</option><option>多↑</option><option>多↓</option><option>死亡交叉</option><option>空↑</option><option>空↓</option></select></div><div class="tech-item"><label>日趨勢</label><select id="d_dayTrend" class="mini-select"><option></option><option>多</option><option>空</option><option>盤整</option></select></div><div class="tech-item"><label>15分趨勢</label><select id="d_trend15m" class="mini-select"><option></option><option>多</option><option>空</option><option>盤整</option></select></div><div class="tech-item"><label>5分趨勢</label><select id="d_trend5m" class="mini-select"><option></option><option>多</option><option>空</option><option>盤整</option></select></div></div></details>
-              <div class="input-group" style="margin-top:10px;"><label>股數</label><input type="number" id="d_shares" placeholder="1000" inputmode="numeric"></div>
-              <div class="flex-row"><div class="flex-col input-group"><label>進場價</label><input type="number" id="d_entryPrice" step="0.01" inputmode="decimal"></div><div class="flex-col input-group"><label>實際進</label><input type="number" id="d_realEntryPrice" step="0.01" inputmode="decimal"></div></div>
-              <div class="flex-row"><div class="flex-col input-group"><label>出場價</label><input type="number" id="d_exitPrice" step="0.01" inputmode="decimal"></div><div class="flex-col input-group"><label>實際出</label><input type="number" id="d_realExitPrice" step="0.01" inputmode="decimal"></div></div>
-              <div class="input-group"><label>出場原因</label><select id="d_exitReason"><option>停利</option><option>停損</option><option>鎖股觀察</option><option>遇壓</option><option>遇撐</option></select></div>
-              <button type="button" class="btn-muji" onclick="submitDayTrade()">送出當沖紀錄</button>
-            </form>
-          </div>
-        </div>
-      </div>
-      <div id="tab-dashboard" class="tab-content active">
-
-        <div class="dashboard-grid">
-            <div class="muji-card schedule-card">
-                <div class="card-label">本週行程</div>
-                <ul class="calendar-list" id="calendar-list"><li>讀取中...</li></ul>
-            </div>
-            <div class="right-col">
-                <div class="muji-card goal-card">
-                    <div class="card-label">今日目標</div>
-                    <div id="goal-display" class="goal-text-read">讀取中...</div>
-                </div>
-                <div class="muji-card quote-card">
-                    <div class="card-label">每日一句</div>
-                    <div class="quote-text" id="daily-quote">讀取中...</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="dashboard-main-grid">
-            <div class="muji-card expense-display grid-c1" onclick="triggerManualSync()">
-                <div class="card-label">今日開銷</div>
-                <div class="big-number" id="today-expense">...</div>
-            </div>
-            <div class="action-btn-container record-btn grid-c2" onclick="openModal()">
-                <div class="btn-icon"><span class="material-icons-round">edit_note</span></div>
-                <div class="btn-text">記帳</div>
-            </div>
-            <div class="muji-card expense-display grid-c3">
-                <div class="card-label">本月支出</div>
-                <div class="big-number" id="month-expense" style="color: var(--text-main);">...</div>
-            </div>
-            <a href="https://docs.google.com/spreadsheets/d/1vRIp7aP_Fz8fCClQ8PzQs-412KsM_uvyY3WsEqUedxg/edit#gid=1703556943" target="sheet_view" class="action-btn-container link-btn grid-c4">
-                <div class="btn-icon"><span class="material-icons-round">table_view</span></div>
-                <div class="btn-text">表格</div>
-            </a>
-
-            <div class="left-stack-wrapper grid-left-block">
-                <div class="muji-card" style="padding: 12px 15px; flex: 0 0 auto; height: auto;">
-                    <div class="card-label" style="margin-bottom: 2px;">感恩事件</div>
-                    <ul id="mini-gratitude-list"><li>讀取中...</li></ul>
-                    <div class="gratitude-compact">
-                        <input type="text" id="journal-text" class="input-underline" placeholder="隨手記錄...">
-                        <button type="button" class="btn-mini-muji" onclick="submitGratitude()">感謝</button>
-                    </div>
-                </div>
-                
-                <div class="muji-card" style="display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 0;">
-                    <div class="goal-header-group">
-                         <div class="card-label" style="margin:0;">目標實踐</div>
-                         <div class="cycle-badge" id="cycle-id">Cycle ...</div>
-                    </div>
-    
-                    <div class="macro-goal-container">
-                        <div class="macro-row" style="display: flex; gap: 10px;">
-                            <div style="flex: 1; display: flex; align-items: baseline; min-width: 0;">
-                                <span class="macro-label">年</span>
-                                <span id="goal-year" class="macro-text" onclick="toggleText(this)">...</span>
-                            </div>
-                            <div style="flex: 1; display: flex; align-items: baseline; min-width: 0;">
-                                <span class="macro-label">季</span>
-                                <span id="goal-season" class="macro-text" onclick="toggleText(this)">...</span>
-                            </div>
-                        </div>
-                        
-                        <div class="macro-row" style="margin-top: 8px;">
-                            <span class="macro-label">周</span>
-                            <span id="cycle-range-display" class="date-suffix" style="margin-right: 8px; color: #999; font-size: 0.75rem; font-weight: 500;"></span>
-                            <span id="goal-weekly" class="macro-text" onclick="toggleText(this)">...</span>
-                        </div>
-                    </div>
-    
-                    <div class="cycle-list-container">
-                        <div class="cycle-list-item"><span class="cycle-cat">職業</span> <span id="goal-career" class="cycle-desc">...</span></div>
-                        <div class="cycle-list-item"><span class="cycle-cat">健康</span> <span id="goal-health" class="cycle-desc">...</span></div>
-                        <div class="cycle-list-item"><span class="cycle-cat">財務</span> <span id="goal-wealth" class="cycle-desc">...</span></div>
-                        <div class="cycle-list-item"><span class="cycle-cat">技能</span> <span id="goal-skills" class="cycle-desc">...</span></div>
-                        <div class="cycle-list-item"><span class="cycle-cat">生活</span> <span id="goal-life" class="cycle-desc">...</span></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="muji-card grid-right-block">
-                <div class="card-label">損益試算表</div>
-                <div class="table-wrapper auto-height"><table id="table-profit" class="muji-table"></table></div>
-            </div>
-
-            <div class="muji-card grid-full-width">
-                <div class="card-label">顯化冥想</div>
-                <ul class="journal-list" id="list-manifestation"><li style="color:#ccc; text-align:center;">讀取中...</li></ul>
-            </div>
-            <div class="muji-card grid-full-width">
-                <div class="card-label">投資計算表</div>
-                <div class="table-wrapper scrollable"><table id="table-invest-calc" class="muji-table"></table></div>
-            </div>
-        </div>
-      </div>
-      <div id="tab-journal" class="tab-content">
-        <div class="muji-title">顯化日記</div>
-        <div class="operation-container">
-          <div style="padding: 0 10px;">
-            <button class="journal-section-btn" onclick="openJournalModal('start')"><span>一日之始</span> <span class="material-icons-round">chevron_right</span></button>
-            <button class="journal-section-btn" onclick="openJournalModal('middle')"><span>一日之中</span> <span class="material-icons-round">chevron_right</span></button>
-            <button class="journal-section-btn" onclick="openJournalModal('end')"><span>一日之末</span> <span class="material-icons-round">chevron_right</span></button>
-          </div>
-        </div>
-      </div>
-    </main>
-    <nav class="bottom-nav">
-      <button onclick="switchTab('tab-operation')" class="nav-btn" id="nav-operation"><span class="material-icons-round">trending_up</span></button>
-      <button onclick="switchTab('tab-dashboard')" class="nav-btn active" id="nav-dashboard"><span class="material-icons-round">home</span></button>
-      <button onclick="switchTab('tab-journal')" class="nav-btn" id="nav-journal"><span class="material-icons-round">auto_stories</span></button>
-    </nav>
-    <div id="expense-modal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>新增收支</h3><span class="material-icons-round close-btn" onclick="closeModal()">close</span></div><form id="modal-form"><div class="input-group"><label>金額</label><input type="number" id="amount" required placeholder="0" inputmode="decimal" style="font-size: 1.5rem; text-align: center;"></div><div class="input-group"><label>消費方式</label><div class="chip-group"><label class="muji-chip"><input type="radio" name="paymentMethod" value="現金" checked><span>現金</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="悠遊卡"><span>悠遊卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="台新Gogoro"><span>台新Gogoro</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="富邦J卡"><span>富邦J卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="中信卡"><span>中信卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="玉山卡"><span>玉山卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="新光卡"><span>新光卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="兆豐卡"><span>兆豐卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="串暫欠"><span>串暫欠</span></label></div></div><div class="input-group" style="display:flex; justify-content:space-between; align-items:center;"><label style="margin:0;">消費拆分?</label><label class="switch"><input type="checkbox" id="isSplit" onchange="toggleSplitOptions()"><span class="slider round"></span></label></div><div id="split-section" style="display:none; background:#fafafa; padding:10px; border:1px solid #eee; margin-bottom:15px;"><div class="input-group"><label>拆分方式</label><select id="splitMethod" onchange="toggleSplitInputs()"><option value="一人一半">一人一半</option><option value="潘全額">潘全額</option><option value="潘部分">潘部分</option><option value="他人">他人</option></select></div><div id="input-pan-part" class="input-group" style="display:none;"><label>潘 部份金額</label><input type="number" id="panAmount"></div><div id="input-others" class="input-group" style="display:none;"><label>他人 金額</label><input type="number" id="othersAmount"></div><div id="input-chuan-pay" class="input-group" style="display:none;"><label>串 支付 (選填)</label><input type="number" id="chuanPay" placeholder="0"></div></div><div class="input-group" style="display:flex; align-items:center; gap:10px;"><input type="checkbox" id="isTobacco" style="width:auto;"><label for="isTobacco" style="margin:0;">是否含菸</label></div><div class="input-group"><label>備註</label><input type="text" id="note"></div><button type="button" class="btn-muji" onclick="submitModalExpense()">確認儲存</button></form></div></div>
-    <div id="modal-start" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>一日之始</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('start')">close</span></div><form onsubmit="submitJournalPart('start'); return false;"><div class="input-group"><label>日期</label><input type="date" id="j_date_start" required></div><div class="input-group"><label>今日目標</label><input type="text" id="j_q3"></div><div class="input-group"><label>是否能靜心看盤</label><select id="j_q4"><option value="是">是</option><option value="否">否</option></select></div><button type="submit" class="btn-muji">儲存</button></form></div></div>
-    <div id="modal-middle" class="modal-overlay"><div class="modal-content" style="max-height:85vh; overflow-y:auto;"><div class="modal-header"><h3>一日之中</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('middle')">close</span></div><form onsubmit="submitJournalPart('middle'); return false;"><div class="input-group"><label>日期</label><input type="date" id="j_date_middle" required></div><div class="input-group"><label>是否進行交易</label><select id="j_q5"><option value="否">否</option><option value="買進">買進</option><option value="賣出">賣出</option><option value="當沖">當沖</option></select></div><hr style="border:0; border-top:1px dashed #eee; margin:15px 0;"><h4 style="margin:0 0 10px; color:#666;">帳戶紀錄</h4><div class="flex-row"><div class="flex-col input-group"><label>帳面金額</label><input type="number" id="j_q6"></div><div class="flex-col input-group"><label>成本</label><input type="number" id="j_q7"></div></div><div class="flex-row"><div class="flex-col input-group"><label>淨利%</label><input type="number" id="j_q8" step="0.01"></div><div class="flex-col input-group"><label>銀行餘額</label><input type="number" id="j_q9"></div></div><hr style="border:0; border-top:1px dashed #eee; margin:15px 0;"><h4 style="margin:0 0 10px; color:#666;">大盤紀錄</h4><div class="input-group"><label>今日大事件</label><input type="text" id="j_q10"></div><div class="flex-row"><div class="flex-col input-group"><label>大盤指數</label><input type="number" id="j_q11"></div><div class="flex-col input-group"><label>漲跌%</label><input type="number" id="j_q12" step="0.01"></div></div><button type="submit" class="btn-muji">儲存</button></form></div></div>
-    
-    <div id="modal-end" class="modal-overlay">
-        <div class="modal-content" style="max-height:90vh; overflow-y:auto;">
-            <div class="modal-header"><h3>一日之末</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('end')">close</span></div>
-            <form onsubmit="submitJournalPart('end'); return false;">
-                <div class="input-group"><label>日期</label><input type="date" id="j_date_end" required></div>
-
-                <div style="margin-bottom:15px; background:#fafafa; padding:10px; border-radius:4px;">
-                      <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.8rem; color: #888;">
-                        <span>修煉完成度</span>
-                        <span id="progress-text" style="font-weight: bold; color: var(--muji-red);">0%</span>
-                      </div>
-                      <div style="width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden;">
-                        <div id="daily-progress-bar" style="width: 0%; height: 100%; background: var(--muji-red); transition: width 0.3s ease;"></div>
-                      </div>
-                </div>
-
-                <div class="routine-wrapper" style="margin-bottom: 20px;">
-                    <div style="background-color: #fafafa; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
-                        <div class="toggle-row" style="border-bottom: none; margin-bottom: 0;">
-                            <span style="font-weight: 600; color: var(--muji-red); font-size: 0.9rem;">今日是錄影日？</span>
-                            <label class="switch">
-                                <input type="checkbox" id="is_recording_day">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #999; margin-top: 5px;">*開啟後，運動與保養將進入簡化模式。</div>
-                    </div>
-
-                    <!-- NEW: Habit Section -->
-                    <div class="routine-section" id="section-habit">
-                         <div class="routine-header">HABIT CHECK</div>
-                         <div class="toggle-row">
-                             <span id="lbl_hab_1" style="font-size: 0.9rem;">讀取中...</span>
-                             <label class="switch">
-                                 <input type="checkbox" id="j_q86">
-                                 <span class="slider round"></span>
-                             </label>
-                         </div>
-                         <div class="toggle-row">
-                             <span id="lbl_hab_2" style="font-size: 0.9rem;">讀取中...</span>
-                             <label class="switch">
-                                 <input type="checkbox" id="j_q87">
-                                 <span class="slider round"></span>
-                             </label>
-                         </div>
-                         <div class="toggle-row">
-                             <span id="lbl_hab_3" style="font-size: 0.9rem;">讀取中...</span>
-                             <label class="switch">
-                                 <input type="checkbox" id="j_q88">
-                                 <span class="slider round"></span>
-                             </label>
-                         </div>
-                         <div class="toggle-row">
-                             <span id="lbl_hab_4" style="font-size: 0.9rem;">讀取中...</span>
-                             <label class="switch">
-                                 <input type="checkbox" id="j_q90">
-                                 <span class="slider round"></span>
-                             </label>
-                         </div>
-                    </div>
-
-                    <div class="routine-section">
-                        <div class="routine-header">DAILY REVIEW</div>
-                        <div class="input-group">
-                            <label>今日我的事件</label>
-                            <input type="text" id="j_q89">
-                        </div>
-                        <div class="input-group">
-                            <label>今日能量/感受</label>
-                            <input type="text" id="j_q91">
-                        </div>
-                    </div>
-
-                    <div class="routine-section" id="section-wealth">
-                        <div class="routine-header">WEALTH & MANIFESTATION</div>
-                        <div class="input-group">
-                            <label id="lbl_wealth_evidence">💰 金錢顯化</label>
-                            <textarea id="wealth_evidence" rows="2" placeholder="..."></textarea>
-                        </div>
-                        <div class="input-group" id="wrapper-invest">
-                            <label id="lbl_invest_practice">📈 投資實戰</label>
-                            <div class="chip-group" id="invest-chips" style="margin-bottom: 8px;">
-                                </div>
-                            <input type="text" id="invest_practice" placeholder="手動補充...">
-                        </div>
-                    </div>
-
-                    <div class="routine-section">
-                        <div class="routine-header">CAREER REVIEW</div>
-                        <div class="input-group">
-                            <label id="lbl_career_people">【人】溝通</label>
-                            <input type="text" id="career_people" placeholder="...">
-                        </div>
-                        <div class="input-group">
-                            <label id="lbl_career_incident">【事】突發</label>
-                            <input type="text" id="career_incident" placeholder="...">
-                        </div>
-                        <div class="input-group">
-                            <label id="lbl_career_next_focus">【進度】焦點</label>
-                            <input type="text" id="career_next_focus" placeholder="..." style="border-color: var(--muji-red);">
-                        </div>
-                    </div>
-
-                    <div class="routine-section" id="section-health">
-                        <div class="routine-header">HEALTH & SKILLS</div>
-                        <div class="chip-group" id="health-chips-container" style="margin-bottom: 15px;">
-                            <label class="muji-chip"><input type="checkbox" id="check_duolingo"><span id="lbl_check_duolingo">日文</span></label>
-                            <label class="muji-chip"><input type="checkbox" id="check_reading"><span id="lbl_check_reading">閱讀</span></label>
-                        </div>
-                        <div class="input-group">
-                            <label id="lbl_sport_execution">運動執行</label>
-                            <select id="sport_execution" class="mini-select">
-                                <option value="">未執行</option>
-                                <option value="Plan B">Plan B</option>
-                                </select>
-                        </div>
-                        <div class="input-group">
-                            <label id="lbl_beauty_routine">美容保養</label>
-                            <select id="beauty_routine" class="mini-select">
-                                <option value="">未執行</option>
-                                <option value="Booster Pro">Booster Pro</option>
-                                <option value="Hair/Foot">洗髮泡腳</option>
-                                <option value="Plan B">基礎清潔</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="routine-section" id="section-declutter">
-                        <div class="routine-header">DECLUTTER</div>
-                        <div class="flex-row">
-                            <div class="flex-col input-group">
-                                <label id="lbl_declutter_item">丟棄物品</label>
-                                <input type="text" id="declutter_item" placeholder="...">
-                            </div>
-                            <div class="flex-col input-group">
-                                <label id="lbl_declutter_area">整理區域</label>
-                                <select id="declutter_area" class="mini-select">
-                                    <option value="tops">上衣類</option>
-                                    <option value="others">其他</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="routine-section">
-                        <div class="routine-header">顯化日記</div>
-                        <div class="input-group"><label>感謝一切,我在...</label><input type="text" id="j_q93"></div>
-                        <div class="input-group"><label>之前...</label><input type="text" id="j_q94"></div>
-                        <div class="input-group"><label>我感覺...</label><input type="text" id="j_q95"></div>
-                        <div class="input-group"><label>並且我...</label><input type="text" id="j_q96"></div>
-                        <div class="input-group"><label>最後我想...(感謝)</label><input type="text" id="j_q97"></div>
-                        <div class="input-group"><label>完成目標的我今天會做什麼</label><input type="text" id="j_q98"></div>
-                        <div class="input-group"><label>明日期望/待辦</label><input type="text" id="j_q99"></div>
-                    </div>
-                </div>
-                <button type="submit" class="btn-muji">提交一日總結</button>
-            </form>
-        </div>
-    </div>
-    
-    <div id="toast">已儲存</div>
-    
-    <script>
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbyLdqJ5ptuIscFyqh96me5c2en0lA8hz_dwJ9MW0WYiFY9KSpbvqNUniuLJf1TSyHU/exec"; 
-
-      const firebaseConfig = { apiKey: "AIzaSyAa57KrUxbmw4k1YFDuEuREPmmYXhrNRGY", authDomain: "manifestation-fc95b.firebaseapp.com", databaseURL: "https://manifestation-fc95b-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "manifestation-fc95b", storageBucket: "manifestation-fc95b.firebasestorage.app", messagingSenderId: "330306956614", appId: "1:330306956614:web:482c539a49d63dfc34c947", measurementId: "G-2J15VBFWGG" };
-      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
-      
-      window.onload = function() {
-        updateDate(); getWeather(); setupDashboardListener(); 
-        setupMidnightRefresh(); 
-        
-        fetchCurrentMission();
-
-        var today = new Date();
-        if(document.getElementById('s_date')) document.getElementById('s_date').valueAsDate = today;
-        if(document.getElementById('d_date')) document.getElementById('d_date').valueAsDate = today;
-        if(document.getElementById('j_date_start')) document.getElementById('j_date_start').valueAsDate = today;
-        if(document.getElementById('j_date_middle')) document.getElementById('j_date_middle').valueAsDate = today;
-        if(document.getElementById('j_date_end')) document.getElementById('j_date_end').valueAsDate = today;
-        if(document.getElementById('s_action')) updateReasonOptions();
-        if(document.getElementById('d_trend')) updateDayTradeReason();
-        
-        document.querySelectorAll('#modal-end input, #modal-end select, #modal-end textarea').forEach(el => {
-            el.addEventListener('input', updateProgress);
-            el.addEventListener('change', updateProgress);
-        });
-        
-        document.getElementById('is_recording_day').addEventListener('change', function() {
-            autoSelectRoutine();
-        });
+// === 支援前端抓取 ===
+function doGet(e) {
+  if (!e || !e.parameter || !e.parameter.action) {
+    return HtmlService.createTemplateFromFile('index')
+      .evaluate()
+      .setTitle('我的生活・投資手帖')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
+  }
+  
+  if (e.parameter.action === "getMission") {
+      var ss = SpreadsheetApp.openById(GOAL_SPREADSHEET_ID);
+      var result = { 
+       year_goal: "未設定", season_goal: "未設定", 
+       cycle_id: "?", cycle_goal: "未設定", cycle_range: "",
+       career: "-", health: "-", wealth: "-", skills: "-", life: "-", 
+       habit_names: ["習慣 1", "習慣 2", "習慣 3", "習慣 4"],
+       completion_rate: "0%",
+       questions: [] 
       };
 
-      function setupMidnightRefresh() {
-          const now = new Date();
-          const night = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0); 
-          const msToMidnight = night.getTime() - now.getTime();
-
-          setTimeout(function() {
-              console.log("Midnight! Refreshing data...");
-              updateDate(); 
-              loadDashboardFromFirebase(); 
-              setupMidnightRefresh(); 
-          }, msToMidnight);
-      }
-
-      function autoSelectRoutine() {
-        const isRecording = document.getElementById('is_recording_day').checked;
-        const beautySelect = document.getElementById('beauty_routine');
-        const investWrapper = document.getElementById('wrapper-invest');
-        const declutterSection = document.getElementById('section-declutter');
-        const sportSelect = document.getElementById('sport_execution');
-        const habitSection = document.getElementById('section-habit');
+      // 1. 抓取當期目標 & 計算習慣達成率
+      var tSheet = ss.getSheetByName('Plan_Targets');
+      if (tSheet && tSheet.getLastRow() > 1) {
+        var tData = tSheet.getDataRange().getValues();
+        var checkDate = new Date();
+        checkDate.setHours(0,0,0,0);
         
-        if (isRecording) {
-            // 錄影日：鎖定投資與斷捨離，但運動保留
-            if(investWrapper) investWrapper.classList.add('disabled-zone');
-            if(declutterSection) declutterSection.classList.add('disabled-zone');
-            if(habitSection) habitSection.classList.add('disabled-zone');
-            
-            if(investWrapper) investWrapper.querySelectorAll('input').forEach(el => el.disabled = true);
-            if(declutterSection) declutterSection.querySelectorAll('input, select').forEach(el => el.disabled = true);
-            if(habitSection) habitSection.querySelectorAll('input').forEach(el => el.disabled = true);
+        for (var i = 1; i < tData.length; i++) {
+          var type = tData[i][0];
+          var startDate = new Date(tData[i][2]);
+          var endDate = new Date(tData[i][3]);
+          startDate.setHours(0,0,0,0);
+          endDate.setHours(0,0,0,0);
+          
+          if (checkDate >= startDate && checkDate <= endDate) {
+            if (type === 'Year') result.year_goal = tData[i][4];
+            else if (type === 'Season') result.season_goal = tData[i][4];
+            else if (type === 'Cycle') {
+              result.cycle_id = tData[i][1];
+              result.cycle_goal = tData[i][4];
+              var sStr = (startDate.getMonth()+1) + "/" + startDate.getDate();
+              var eStr = (endDate.getMonth()+1) + "/" + endDate.getDate();
+              result.cycle_range = sStr + " - " + eStr;
+              result.career = tData[i][5]; result.health = tData[i][6];
+              result.wealth = tData[i][7]; result.skills = tData[i][8];
+              result.life = tData[i][9];
+              
+              // A. 讀取習慣名稱 (K, L, M, N 欄 -> Index 10, 11, 12, 13)
+              result.habit_names = [
+                  tData[i][10] || "習慣 1",
+                  tData[i][11] || "習慣 2",
+                  tData[i][12] || "習慣 3",
+                  tData[i][13] || "習慣 4"
+              ];
 
-            beautySelect.value = 'Plan B';
-            showToast("錄影日：已鎖定簡化模式");
-        } else {
-            // 恢復
-            if(investWrapper) investWrapper.classList.remove('disabled-zone');
-            if(declutterSection) declutterSection.classList.remove('disabled-zone');
-            if(habitSection) habitSection.classList.remove('disabled-zone');
-            
-            if(investWrapper) investWrapper.querySelectorAll('input').forEach(el => el.disabled = false);
-            if(declutterSection) declutterSection.querySelectorAll('input, select').forEach(el => el.disabled = false);
-            if(habitSection) habitSection.querySelectorAll('input').forEach(el => el.disabled = false);
-            
-            beautySelect.value = ""; 
-        }
-        updateProgress();
-      }
+              // B. 計算達成率邏輯
+              try {
+                  var rSheet = ss.getSheetByName('紀錄');
+                  if (rSheet && rSheet.getLastRow() > 1) {
+                      var rData = rSheet.getDataRange().getValues();
+                      var trueCount = 0;
+                      // 計算經過天數 (startDate 到 today)
+                      var diffTime = checkDate.getTime() - startDate.getTime();
+                      var elapsedDays = Math.floor(diffTime / (1000 * 3600 * 24)) + 1;
+                      if (elapsedDays < 1) elapsedDays = 1;
 
-      function fetchCurrentMission() {
-        if(GAS_URL.includes("你的_SCRIPT_ID")) return;
-        fetch(GAS_URL + "?action=getMission") 
-        .then(response => response.json())
-        .then(data => {
-            let cycleText = `Cycle ${data.cycle_id || '?'}`;
-            document.getElementById('cycle-id').innerText = cycleText;
-
-            document.getElementById('goal-year').innerText = data.year_goal || '尚未設定年度目標';
-            document.getElementById('goal-season').innerText = data.season_goal || '尚未設定季度目標';
-            document.getElementById('goal-weekly').innerText = data.cycle_goal || '尚未設定周目標';
-            
-            if(document.getElementById('cycle-range-display')) {
-                document.getElementById('cycle-range-display').innerText = data.cycle_range || '';
-            }
-
-            document.getElementById('goal-career').innerText = data.career || '-';
-            document.getElementById('goal-health').innerText = data.health || '-';
-            document.getElementById('goal-wealth').innerText = data.wealth || '-';
-            document.getElementById('goal-skills').innerText = data.skills || '-';
-            document.getElementById('goal-life').innerText = data.life || '-';
-            
-            // New: Populate Habit Labels from Backend Data
-            if(document.getElementById('lbl_hab_1')) document.getElementById('lbl_hab_1').innerText = data.habit_1 || '習慣 1';
-            if(document.getElementById('lbl_hab_2')) document.getElementById('lbl_hab_2').innerText = data.habit_2 || '習慣 2';
-            if(document.getElementById('lbl_hab_3')) document.getElementById('lbl_hab_3').innerText = data.habit_3 || '習慣 3';
-            if(document.getElementById('lbl_hab_4')) document.getElementById('lbl_hab_4').innerText = data.habit_4 || '習慣 4';
-            
-            if(data.questions && data.questions.length > 0) {
-                applyFormConfig(data.questions);
-            }
-        })
-        .catch(err => {
-            console.error("無法讀取目標", err);
-        });
-      }
-      
-      function toggleText(el) {
-          el.classList.toggle('expanded');
-      }
-
-      function applyFormConfig(questions) {
-         questions.forEach(q => {
-             var el = document.getElementById(q.id);
-             var labelEl = document.getElementById("lbl_" + q.id);
-             
-             if(labelEl) labelEl.innerText = q.label;
-             if(el && q.placeholder) el.placeholder = q.placeholder;
-
-             if (q.options && q.options.length > 0) {
-                 if (el && el.tagName === 'SELECT') {
-                     // 特別處理：保留 "未執行" 選項，然後加入後端來的選項
-                     // 如果是運動選單，我們保留 Plan B
-                     var keepPlanB = (q.id === 'sport_execution');
-                     el.innerHTML = '<option value="">未執行</option>' + (keepPlanB ? '<option value="Plan B">Plan B</option>' : '');
-                     q.options.forEach(opt => {
-                         if (opt !== 'Plan B') { // 避免重複
-                             var option = document.createElement("option");
-                             option.value = opt;
-                             option.innerText = opt;
-                             el.appendChild(option);
-                         }
-                     });
-                 } else if (q.id === 'invest_practice') {
-                     var chipContainer = document.getElementById('invest-chips');
-                     chipContainer.innerHTML = '';
-                     q.options.forEach(opt => {
-                         var label = document.createElement("label");
-                         label.className = "muji-chip";
-                         label.innerHTML = `<input type="checkbox" onchange="updateInvestInput(this)" value="${opt}"><span>${opt}</span>`;
-                         chipContainer.appendChild(label);
-                     });
-                 }
-             }
-         });
-      }
-
-      function updateProgress() {
-        const isRecording = document.getElementById('is_recording_day').checked;
-        let total = 10; // 基礎 6 + 習慣 4 = 10
-        
-        if (isRecording) {
-            total = 4; // 錄影日：只算 職業、運動、保養、財富 (排除投資、斷捨離、習慣)
-        }
-
-        let completed = 0;
-        
-        // 1. 職業 (Career)
-        if (document.getElementById('career_people').value && document.getElementById('career_next_focus').value) completed++;
-        
-        // 2. 健康 (Health)
-        if (isRecording) {
-             if (document.getElementById('sport_execution').value) completed++;
-        } else {
-             if (document.getElementById('sport_execution').value) completed++;
-             // 技能 (Skills) - 0.5分
-             if (document.getElementById('check_duolingo').checked && document.getElementById('check_reading').checked) completed += 0.5; 
-        }
-        
-        // 3. 美容 (Beauty)
-        if (document.getElementById('beauty_routine').value) completed++;
-        
-        // 4. 財富 (Wealth)
-        if (document.getElementById('wealth_evidence').value) completed++;
-        
-        // 非錄影日額外項目
-        if (!isRecording) {
-            // 5. 投資
-            if (document.getElementById('invest_practice').value) completed++;
-            // 6. 斷捨離
-            if (document.getElementById('declutter_item').value) completed++;
-            
-            // 7. 習慣 1~4
-            if (document.getElementById('j_q86').checked) completed++;
-            if (document.getElementById('j_q87').checked) completed++;
-            if (document.getElementById('j_q88').checked) completed++;
-            if (document.getElementById('j_q90').checked) completed++;
-        }
-
-        let percent = (total === 0) ? 0 : Math.floor((completed / total) * 100);
-        document.getElementById('daily-progress-bar').style.width = percent + "%";
-        document.getElementById('progress-text').innerText = percent + "%";
-        return percent;
-      }
-      
-      function updateInvestInput(checkbox) {
-        const input = document.getElementById('invest_practice');
-        let currentVals = input.value ? input.value.split(', ') : [];
-        if (checkbox.checked) {
-            if (!currentVals.includes(checkbox.value)) currentVals.push(checkbox.value);
-        } else {
-            currentVals = currentVals.filter(v => v !== checkbox.value);
-        }
-        input.value = currentVals.join(', ');
-        updateProgress();
-      }
-
-      function setupDashboardListener() {
-        loadDashboardFromFirebase(); 
-
-        db.ref('system/lastUpdate').on('value', (snapshot) => {
-            const timestamp = snapshot.val();
-            if(timestamp) {
-                console.log("收到更新信號:", timestamp);
-                loadDashboardFromFirebase(); 
-            }
-        });
-      }
-
-      function loadDashboardFromFirebase() {
-        if(document.getElementById('daily-quote')) document.getElementById('daily-quote').innerText = "雲端同步中...";
-        
-        db.ref('dashboard').once('value').then((snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                renderDashboard(data);
-                if(document.getElementById('daily-quote')) document.getElementById('daily-quote').style.color = "var(--accent-brown)"; 
-            } else {
-                document.getElementById('daily-quote').innerText = "無資料";
-            }
-        }).catch((error) => {
-            console.error("Firebase:", error);
-            document.getElementById('daily-quote').innerText = "讀取失敗";
-        });
-      }
-
-      function renderDashboard(data) {
-            if(!data) return;
-            if(document.getElementById('today-expense')) document.getElementById('today-expense').innerText = (data.todayExpense || 0).toLocaleString();
-            if(document.getElementById('month-expense')) document.getElementById('month-expense').innerText = data.monthExpense;
-            if(document.getElementById('daily-quote')) document.getElementById('daily-quote').innerText = data.quote;
-            if(document.getElementById('goal-display')) document.getElementById('goal-display').innerText = data.goalText || "尚無目標"; 
-            renderTable(data.investCalcData, 'table-invest-calc');
-            renderTable(data.profitData, 'table-profit');
-            
-            var calList = document.getElementById('calendar-list');
-            if(calList && data.calendarEvents) {
-                calList.innerHTML = '';
-                if(data.calendarEvents.length === 0) {
-                    calList.innerHTML = '<li style="color:#ccc; justify-content:center;">暫無行程</li>';
-                } else {
-                    var now = new Date();
-                    var tStr = (now.getMonth() + 1) + "/" + now.getDate();
-                    var max = 5; 
-                    data.calendarEvents.slice(0, max).forEach(evt => {
-                        var li = document.createElement('li');
-                        var isT = evt.date.indexOf(tStr) === 0;
-                        var w = isT ? "bold" : "normal";
-                        var c = isT ? "#333" : "#555";
-                        var dc = isT ? "#d35400" : "var(--accent-brown)";
-                        var dt = isT ? "TODAY" : evt.date;
-                        var bs = evt.color ? `border-left: ${isT?'6px':'4px'} solid ${evt.color}; padding-left: 8px;` : '';
-                        li.style.padding = "8px 0 8px 5px";
-                        if(isT) li.style.backgroundColor = "#fafafa";
-                        li.innerHTML = `<div style="display:flex; align-items:center; width:100%; ${bs}"><span class="cal-date" style="min-width: 60px; color:${dc}; font-weight:${w};">${dt}</span><span class="cal-title-wrapper" style="color:${c}; font-weight:${w};">${evt.title}</span></div>`;
-                        calList.appendChild(li);
-                    });
-                    if(data.calendarEvents.length > max) {
-                        var more = document.createElement('li');
-                        more.innerHTML = `還有 ${data.calendarEvents.length - max} 個行程...`;
-                        more.style.cssText = "color:#ccc; text-align:center; border:none; font-size:0.8rem;";
-                        calList.appendChild(more);
-                    }
-                }
-            } else if(calList) { calList.innerHTML = '<li style="color:#ccc; justify-content:center;">暫無行程</li>'; }
-
-            var miniGratList = document.getElementById('mini-gratitude-list');
-            if (miniGratList) {
-                miniGratList.innerHTML = '';
-                if (!data.gratitudeList || Object.keys(data.gratitudeList).length === 0) {
-                    miniGratList.innerHTML = '<li style="color:#ccc; text-align:center;">無資料</li>';
-                } else {
-                    var listArray = Array.isArray(data.gratitudeList) ? data.gratitudeList : Object.values(data.gratitudeList);
-                    listArray.sort((a, b) => new Date(a.date) - new Date(b.date));
-                    var recentItems = listArray.slice(-5);
-                    
-                    recentItems.forEach(item => { 
-                        var li = document.createElement('li'); 
-                        var shortDate = (item.date && item.date.length >= 5) ? item.date.substring(5) : item.date;
-                        li.innerHTML = `<span class="date">${shortDate}</span> ${item.content}`; 
-                        miniGratList.appendChild(li); 
-                    });
-                }
-            }
-            var maniList = document.getElementById('list-manifestation');
-            if (maniList) {
-                maniList.innerHTML = '';
-                if (!data.manifestationList || data.manifestationList.length === 0) maniList.innerHTML = '<li style="color:#ccc; text-align:center;">無資料</li>';
-                else data.manifestationList.forEach(item => { var li = document.createElement('li'); li.innerHTML = `<span class="journal-meta">${item.date}</span> ${item.content}`; maniList.appendChild(li); });
-            }
-      }
-      function pushToFirebaseQueue(taskType, taskData, successMsg, callback) {
-          showToast("處理中...");
-          db.ref('request_queue').push({ type: taskType, timestamp: new Date().toISOString(), ...taskData }).then(() => { showToast(successMsg || "已紀錄"); if (callback) callback(); }).catch(error => alert("寫入失敗: " + error.message));
-      }
-      
-      function submitModalExpense() { 
-        var btn = document.querySelector('#modal-form .btn-muji'); btn.disabled = true;
-        var isSplitChecked = document.getElementById('isSplit').checked;
-        var splitMethod = isSplitChecked ? document.getElementById('splitMethod').value : "";
-        var panAmount = (splitMethod === "潘部分") ? document.getElementById('panAmount').value : "";
-        
-        var formData = { 
-            amount: document.getElementById('amount').value, 
-            paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').value, 
-            isSplit: isSplitChecked ? "是" : "", 
-            isTobacco: document.getElementById('isTobacco').checked ? "是" : "", 
-            splitMethod: splitMethod, 
-            panAmount: panAmount, 
-            othersAmount: document.getElementById('othersAmount').value, 
-            chuanPay: document.getElementById('chuanPay').value, 
-            note: document.getElementById('note').value 
-        }; 
-        pushToFirebaseQueue('expense', formData, "已記帳", () => { closeModal(); document.getElementById('modal-form').reset(); btn.disabled = false; let current = parseFloat(document.getElementById('today-expense').innerText.replace(/,/g,'')) || 0; document.getElementById('today-expense').innerText = (current + (parseFloat(formData.amount)||0)).toLocaleString(); });
-      }
-
-      function submitGratitude() { 
-        var btn = event.target; 
-        btn.disabled = true; 
-        var content = document.getElementById('journal-text').value; 
-        var today = new Date().toISOString().substring(0, 10);
-        pushToFirebaseQueue('journal', { journalType: 'gratitude', content: content, date: today }, "已保存", () => { document.getElementById('journal-text').value = ""; btn.disabled = false; }); 
-      }
-      
-      function submitJournalPart(type) { 
-        var btn = document.querySelector('#modal-' + type + ' button[type="submit"]'); 
-        btn.disabled = true; 
-        var data = { journalType: type }; 
-        
-        if (type === 'start') { 
-            data.date = document.getElementById('j_date_start').value;
-            data.q3 = document.getElementById('j_q3').value; 
-            data.q4 = document.getElementById('j_q4').value; 
-            pushToFirebaseQueue('journal', data, "一日之始已紀錄", () => { closeJournalModal(type); btn.disabled = false; });
-        } 
-        else if (type === 'middle') { 
-            data.date = document.getElementById('j_date_middle').value;
-            data.q5 = document.getElementById('j_q5').value; 
-            data.q6 = document.getElementById('j_q6').value; 
-            data.q7 = document.getElementById('j_q7').value; 
-            data.q8 = document.getElementById('j_q8').value; 
-            data.q9 = document.getElementById('j_q9').value; 
-            data.q10 = document.getElementById('j_q10').value; 
-            data.q11 = document.getElementById('j_q11').value; 
-            data.q12 = document.getElementById('j_q12').value; 
-            pushToFirebaseQueue('journal', data, "盤中紀錄已紀錄", () => { closeJournalModal(type); btn.disabled = false; });
-        } 
-        else if (type === 'end') { 
-            // 1. 準備 Daily Routine 數據 (對應 Practice Report)
-            var routineData = {
-              date: document.getElementById('j_date_end').value,
-              is_recording: document.getElementById('is_recording_day').checked ? "是" : "否",
-              career_review: `【人】${document.getElementById('career_people').value} | 【事】${document.getElementById('career_incident').value || '無'} | 【焦點】${document.getElementById('career_next_focus').value}`,
-              health_status: `運動:${document.getElementById('sport_execution').value} | 保養:${document.getElementById('beauty_routine').value}`,
-              wealth_evidence: document.getElementById('wealth_evidence').value,
-              invest_practice: document.getElementById('invest_practice').value,
-              declutter_item: `${document.getElementById('declutter_item').value} (${document.getElementById('declutter_area').value})`,
-              score: updateProgress() + "%",
-              note: `${document.getElementById('j_q89').value} | 感受:${document.getElementById('j_q91').value}`, 
-              streak: "Day 1"
-            };
-
-            // 2. 準備 Journal 數據 (對應 顯化日記)
-            // 修改重點：j_q86, j_q87, j_q88, j_q90 改為傳送布林值 (true/false)
-            var journalData = {
-                journalType: 'end',
-                date: document.getElementById('j_date_end').value,
-                q86: document.getElementById('j_q86').checked,
-                q87: document.getElementById('j_q87').checked,
-                q88: document.getElementById('j_q88').checked,
-                q89: document.getElementById('j_q89').value, 
-                q90: document.getElementById('j_q90').checked, // 依需求確保它是布林值
-                q91: document.getElementById('j_q91').value,
-                q93: document.getElementById('j_q93').value,
-                q94: document.getElementById('j_q94').value,
-                q95: document.getElementById('j_q95').value,
-                q96: document.getElementById('j_q96').value,
-                q97: document.getElementById('j_q97').value,
-                q98: document.getElementById('j_q98').value,
-                q99: document.getElementById('j_q99').value
-            };
-
-            btn.innerText = "寫入中...";
-            
-            // 同時送出兩個請求到 Queue
-            pushToFirebaseQueue('daily_routine', routineData, null, () => {
-                pushToFirebaseQueue('journal', journalData, "一日總結已歸檔！", () => {
-                    closeJournalModal(type); 
-                    btn.disabled = false; 
-                    btn.innerText = "提交一日總結";
-                    // 清空表單
-                    document.getElementById('modal-end').querySelectorAll('input[type="text"], textarea').forEach(el => el.value = "");
-                    document.getElementById('modal-end').querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
-                    document.getElementById('beauty_routine').selectedIndex = 0;
-                    document.getElementById('sport_execution').selectedIndex = 0;
-                    updateProgress();
-                });
-            });
-        }
-      }
-      
-      function resetGoalForm() {
-         // 此函式已整合進 submitJournalPart('end') 的 callback 中，保留空函式避免報錯
-      }
-
-      function submitStock() { 
-        var btn = document.querySelector('#form-swing .btn-muji'); 
-        btn.disabled = true;
-        var action = document.getElementById('s_action').value;
-        var reason = document.getElementById('s_reason').value;
-        
-        var formData = { 
-            date: document.getElementById('s_date').value, 
-            code: document.getElementById('s_code').value, 
-            name: document.getElementById('s_name').value, 
-            shares: document.getElementById('s_shares').value, 
-            price: document.getElementById('s_price').value, 
-            settlement: document.getElementById('s_settlement').value, 
-            trend: document.getElementById('s_trend').value, 
-            action: action, 
-            reason: reason, 
-            weekTrend: document.getElementById('s_weekTrend').value, 
-            dayTrend: document.getElementById('s_dayTrend').value, 
-            position: document.getElementById('s_position').value, 
-            volume: document.getElementById('s_volume').value, 
-            ma20t: document.getElementById('s_ma20t').value, 
-            maArrangement: document.getElementById('s_maArrangement').value, 
-            kd: document.getElementById('s_kd').value, 
-            macd: document.getElementById('s_macd').value, 
-            pressure: document.getElementById('s_pressure').value, 
-            support: document.getElementById('s_support').value 
-        };
-        
-        pushToFirebaseQueue('stock', formData, "波段紀錄已送出", () => { 
-            backToSelection(); 
-            document.getElementById('stockForm').reset();
-            btn.disabled = false; 
-            var today = new Date();
-            if(document.getElementById('s_date')) document.getElementById('s_date').valueAsDate = today;
-            if(document.getElementById('s_action')) updateReasonOptions();
-        }); 
-      }
-      
-      function submitDayTrade() { 
-        var btn = document.querySelector('#form-daytrade .btn-muji'); 
-        btn.disabled = true;
-        var formData = {
-            date: document.getElementById('d_date').value,
-            code: document.getElementById('d_code').value,
-            name: document.getElementById('d_name').value,
-            trend: document.getElementById('d_trend').value,
-            reason: document.getElementById('d_reason').value,
-            prev20t: document.getElementById('d_prev20t').value,
-            prevVol: document.getElementById('d_prevVol').value,
-            prevKd: document.getElementById('d_prevKd').value,
-            dayTrend: document.getElementById('d_dayTrend').value,
-            trend15m: document.getElementById('d_trend15m').value,
-            trend5m: document.getElementById('d_trend5m').value,
-            shares: document.getElementById('d_shares').value,
-            entryPrice: document.getElementById('d_entryPrice').value,
-            realEntryPrice: document.getElementById('d_realEntryPrice').value,
-            exitPrice: document.getElementById('d_exitPrice').value,
-            realExitPrice: document.getElementById('d_realExitPrice').value,
-            exitReason: document.getElementById('d_exitReason').value
-        };
-        pushToFirebaseQueue('daytrade', formData, "當沖已紀錄", () => { 
-            backToSelection(); 
-            document.getElementById('dayTradeForm').reset();
-            btn.disabled = false; 
-            var today = new Date();
-            if(document.getElementById('d_date')) document.getElementById('d_date').valueAsDate = today;
-            updateDayTradeReason();
-        }); 
-      }
-      function triggerManualSync() {
-          loadDashboardFromFirebase();
-          showToast("正在重新整理資料...");
-          if (typeof google !== 'undefined' && google.script) {
-              google.script.run.syncDashboardToFirebase();
-          }
-      }
-      function switchTab(tabId) { var contents = document.getElementsByClassName('tab-content'); for (var i = 0; i < contents.length; i++) contents[i].classList.remove('active'); var navs = document.getElementsByClassName('nav-btn'); for (var j = 0; j < navs.length; j++) navs[j].classList.remove('active'); document.getElementById(tabId).classList.add('active'); var navId = 'nav-' + tabId.replace('tab-', ''); if(document.getElementById(navId)) document.getElementById(navId).classList.add('active'); if (tabId === 'tab-operation') { backToSelection(); var today = new Date(); if(!document.getElementById('s_date').value) document.getElementById('s_date').valueAsDate = today; if(!document.getElementById('d_date').value) document.getElementById('d_date').valueAsDate = today; } }
-      function selectMode(mode) { document.getElementById('op-selection').classList.add('hidden'); if (mode === 'swing') document.getElementById('form-swing').classList.remove('hidden'); else document.getElementById('form-daytrade').classList.remove('hidden'); }
-      function backToSelection() { document.getElementById('op-selection').classList.remove('hidden'); document.getElementById('form-swing').classList.add('hidden'); document.getElementById('form-daytrade').classList.add('hidden'); }
-      function updateDate() { var now = new Date(); document.getElementById('header-date').innerText = (now.getMonth()+1) + '/' + now.getDate(); document.getElementById('header-day').innerText = ['週日','週一','週二','週三','週四','週五','週六'][now.getDay()]; }
-      function getWeather() { fetch("https://api.open-meteo.com/v1/forecast?latitude=25.033&longitude=121.565&current_weather=true").then(r => r.json()).then(data => { var code = data.current_weather.weathercode; var icon = (code > 3) ? (code > 50 ? "grain" : "cloud") : "wb_sunny"; document.getElementById('weather-display').innerHTML = `<span class="material-icons-round">${icon}</span> ${Math.round(data.current_weather.temperature)}°C`; }).catch(e => { document.getElementById('weather-display').innerText = "--"; }); }
-      function openModal() { document.getElementById('expense-modal').classList.add('active'); }
-      function closeModal() { document.getElementById('expense-modal').classList.remove('active'); }
-      function openJournalModal(type) { 
-          document.getElementById('modal-' + type).classList.add('active'); 
-          // 新版只有 end 需要特別處理
-          if(type === 'end') { 
-              // 可以在這裡重置進度條
-              updateProgress();
-          } 
-      }
-      function closeJournalModal(type) { document.getElementById('modal-' + type).classList.remove('active'); }
-      function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.opacity = 1; setTimeout(() => t.style.opacity = 0, 2000); }
-      function toggleSplitOptions() { var isSplit = document.getElementById('isSplit').checked; document.getElementById('split-section').style.display = isSplit ? 'block' : 'none'; }
-      function toggleSplitInputs() { var method = document.getElementById('splitMethod').value; document.getElementById('input-pan-part').style.display = method === '潘部分' ? 'block' : 'none'; document.getElementById('input-others').style.display = method === '他人' ? 'block' : 'none'; document.getElementById('input-chuan-pay').style.display = 'block'; }
-      function updateReasonOptions() { var action = document.getElementById('s_action').value; var reasonSelect = document.getElementById('s_reason'); var label = document.getElementById('reasonLabel'); reasonSelect.innerHTML = ""; if (action === "進場") { label.innerText = "進場條件"; ["多頭確認", "空頭確認", "回後買上漲(過昨高)", "彈後空下跌(破昨低)", "盤整突破", "盤整跌破", "型態確認", "搶V轉"].forEach(o => { var op = document.createElement("option"); op.value = o; op.innerText = o; reasonSelect.appendChild(op); }); } else { label.innerText = "出場原因"; ["停利", "停損", "遇壓", "遇撐"].forEach(o => { var op = document.createElement("option"); op.value = o; op.innerText = o; reasonSelect.appendChild(op); }); } }
-      function updateDayTradeReason() { var trend = document.getElementById('d_trend').value; var reasonSelect = document.getElementById('d_reason'); reasonSelect.innerHTML = ""; var options = (trend === "多") ? ["急漲", "第2或3個頭頭高", "回檔遇支撐", "K線橫盤", "突破長期下降切線", "突破上升軌道線", "強覆蓋>覆蓋>吞噬>遭遇", "母子懷抱", "覆蓋變夾擊", "一星二陽"] : ["急跌", "第2或3個頭頭低", "上漲遇壓", "反彈遇壓", "K線橫盤", "跌破長期上升切線", "跌破下降軌道線", "強覆蓋>覆蓋>吞噬>遭遇", "母子懷抱", "覆蓋變夾擊", "一星二陰"]; options.forEach(o => { var op = document.createElement("option"); op.value = o; op.innerText = o; reasonSelect.appendChild(op); }); }
-      function renderTable(data, tableId) {
-        var table = document.getElementById(tableId); if(!table) return; table.innerHTML = ''; 
-        if (!data || data.length === 0) { table.innerHTML = '<tr><td>無資料</td></tr>'; return; }
-        var isInvestTable = (tableId === 'table-invest-calc'); var isProfitTable = (tableId === 'table-profit'); var headerRowsCount = isProfitTable ? 2 : 1; var colorTargetIndices = [];
-        if (isInvestTable && data.length > 0) data[0].forEach(function(h, idx) { var txt = (h || "").toString().trim(); if (txt.includes('當沖') || txt.includes('波段') || txt.includes('盈虧') || txt.includes('總和')) colorTargetIndices.push(idx); });
-        data.forEach(function(row, rowIndex) {
-          if (!row || (Array.isArray(row) && row.join('').trim() === '')) return;
-          var tr = document.createElement('tr');
-          row.forEach(function(cell, colIndex) {
-            var isHeader = (rowIndex < headerRowsCount); var td = document.createElement(isHeader ? 'th' : 'td'); 
-            var cellText = (cell === null || cell === undefined) ? "" : cell.toString().trim();
-            if (['0', '0.00', '0.00%', '0%', '-0'].includes(cellText)) td.innerText = ''; 
-            else { td.innerText = cellText; if (isInvestTable && !isHeader && colorTargetIndices.includes(colIndex)) { var numVal = parseFloat(cellText.replace(/,/g, '').replace(/%/g, '')); if (!isNaN(numVal)) { if (numVal > 0) td.classList.add('text-pos'); if (numVal < 0) td.classList.add('text-neg'); } } }
-            if (isInvestTable && !isHeader && /^[0-9,.\-%]+$/.test(cellText) && cellText !== '') td.classList.add('text-right');
-            tr.appendChild(td);
-          });
-          table.appendChild(tr);
-        });
-        if (isProfitTable) applyProfitTableColoring(table);
-      }
-      function applyProfitTableColoring(table) {
-          var rows = table.getElementsByTagName('tr'); var priceRowIndex = -1; var percentRowIndex = -1;
-          for (var i = 0; i < rows.length; i++) { var headerText = rows[i].cells[0] ? rows[i].cells[0].innerText.trim() : ""; if (headerText === '現價') priceRowIndex = i; if (headerText === '%') percentRowIndex = i; }
-          if (priceRowIndex !== -1 && percentRowIndex !== -1) {
-              var priceRow = rows[priceRowIndex]; var percentRow = rows[percentRowIndex];
-              for (var j = 1; j < priceRow.cells.length; j++) {
-                  var percentCell = percentRow.cells[j]; var priceCell = priceRow.cells[j];
-                  if (percentCell && priceCell) { var val = parseFloat(percentCell.innerText.replace('%', '').trim()); if (!isNaN(val)) { if (val > 0) { percentCell.classList.add('text-pos'); priceCell.classList.add('text-pos'); } else if (val < 0) { percentCell.classList.add('text-neg'); priceCell.classList.add('text-neg'); } } }
+                      // 遍歷紀錄表 (假設第1列是標題)
+                      for (var r = 1; r < rData.length; r++) {
+                          var rowDate = rData[r][1]; // B欄 日期
+                          if (rowDate instanceof Date) {
+                              rowDate.setHours(0,0,0,0);
+                              if (rowDate >= startDate && rowDate <= checkDate) {
+                                  // 檢查 AM(38), AN(39), AO(40), AP(41)
+                                  // Google Sheet 的 TRUE 可能是布林值 true 或字串 "TRUE"
+                                  if (rData[r][38] === true || rData[r][38] === "TRUE") trueCount++;
+                                  if (rData[r][39] === true || rData[r][39] === "TRUE") trueCount++;
+                                  if (rData[r][40] === true || rData[r][40] === "TRUE") trueCount++;
+                                  if (rData[r][41] === true || rData[r][41] === "TRUE") trueCount++;
+                              }
+                          }
+                      }
+                      
+                      var totalPossible = elapsedDays * 4;
+                      var rate = (totalPossible > 0) ? (trueCount / totalPossible) : 0;
+                      result.completion_rate = Math.round(rate * 100) + "%";
+                  }
+              } catch(e) {
+                  console.error("計算達成率錯誤: " + e.toString());
+                  result.completion_rate = "Err";
               }
+            }
           }
+        }
       }
-    </script>
-</body>
-</html>
+
+      // 2. 抓取每日題庫
+      var qSheet = ss.getSheetByName('Daily_Questions');
+      if (qSheet && qSheet.getLastRow() > 1) {
+        var qData = qSheet.getRange(2, 1, qSheet.getLastRow() - 1, 4).getValues(); 
+        result.questions = qData.map(function(row) {
+            return { id: row[0], label: row[1], placeholder: row[2], options: row[3] ? row[3].toString().split(',') : [] };
+        });
+      }
+      
+      return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function include(filename) {
+  try { return HtmlService.createHtmlOutputFromFile(filename).getContent(); }
+  catch(e) { return ""; }
+}
+
+// === 核心同步功能 ===
+function syncDashboardToFirebase() {
+  var data = getDashboardData();
+  if (data) {
+    firebasePatch("dashboard", data); 
+    updateUpdateSignal(); 
+  }
+}
+
+function updateUpdateSignal() {
+  firebasePut("system/lastUpdate", new Date().getTime());
+}
+
+function updateDailyCalendar() {
+  try {
+    var events = getCalendarEvents(); 
+    firebasePut("dashboard/calendarEvents", events); 
+    updateUpdateSignal();
+    console.log("日曆已獨立更新");
+  } catch(e) { console.error("日曆更新失敗: " + e.message); }
+}
+
+function setupTrigger() {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) ScriptApp.deleteTrigger(triggers[i]);
+  ScriptApp.newTrigger('processQueue').timeBased().everyMinutes(1).create();
+  syncDashboardToFirebase();
+}
+
+function processQueue() {
+  var queueData = firebaseGet("request_queue");
+  if (!queueData) return;
+
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var goalSs = SpreadsheetApp.openById(GOAL_SPREADSHEET_ID);
+  var hasProcessed = false;
+  
+  for (var key in queueData) {
+      try {
+        var item = queueData[key];
+        var timeStr = item.timestamp ? item.timestamp.replace('T', ' ').substring(0, 19) : Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy/MM/dd HH:mm:ss");
+
+        if (item.type === 'expense') {
+          var sheet = ss.getSheetByName('聚寶盆') || ss.insertSheet('聚寶盆');
+          sheet.appendRow([timeStr, "記帳", parseFloat(item.amount)||0, item.paymentMethod, item.isSplit, item.isTobacco, item.splitMethod, item.panAmount, item.othersAmount, item.chuanPay, item.note]);
+        } 
+        else if (item.type === 'daytrade') {
+          var sheet = ss.getSheetByName('聚寶盆') || ss.insertSheet('聚寶盆');
+          var rowData = new Array(49).fill(""); 
+          rowData[0] = timeStr; rowData[1] = "當沖"; rowData[31] = item.date.replace(/-/g, '/');
+          rowData[32] = item.code; rowData[33] = item.name; rowData[34] = item.trend; 
+          rowData[43] = item.shares; rowData[44] = item.entryPrice; rowData[46] = item.exitPrice; rowData[48] = item.exitReason;
+          sheet.appendRow(rowData);
+        } 
+        else if (item.type === 'stock') {
+          var sheet = ss.getSheetByName('聚寶盆') || ss.insertSheet('聚寶盆');
+          var rowData = new Array(31).fill(""); 
+          rowData[0] = timeStr; rowData[1] = "波段操作"; rowData[11] = item.date.replace(/-/g, '/');
+          rowData[12] = item.code; rowData[13] = item.name; rowData[14] = item.shares; rowData[15] = item.price;
+          rowData[18] = item.action;
+          if (item.action === "進場") rowData[19] = item.reason; else rowData[20] = item.reason;
+          sheet.appendRow(rowData);
+        }
+        else if (item.type === 'daily_routine') {
+           handleJournalEntry(goalSs, item);
+        }
+        else if (item.type === 'journal') {
+           handleJournalEntry(goalSs, item);
+        }
+        else if (item.type === 'plan_update') { 
+           var sheet = goalSs.getSheetByName('Plan2026');
+           if (sheet) {
+             var data = sheet.getDataRange().getValues();
+             for (var r = 1; r < data.length; r++) {
+               if (data[r][0] == item.id) { sheet.getRange(r + 1, 4).setValue(item.status ? "TRUE" : ""); break; }
+             }
+           }
+        } 
+        else if (item.type === 'goal') handleJournalEntry(goalSs, {journalType: 'goal_legacy', text: item.text});
+        
+        firebaseDelete("request_queue/" + key);
+        hasProcessed = true;
+      } catch (e) { console.error("處理失敗 ID:" + key + " Error:" + e.message); }
+  }
+
+  if (hasProcessed) {
+      SpreadsheetApp.flush(); 
+      Utilities.sleep(1000); 
+      syncDashboardToFirebase(); 
+  }
+}
+
+// === 核心寫入邏輯 ===
+function handleJournalEntry(ss, data) {
+  var sheet = ss.getSheetByName('紀錄') || ss.insertSheet('紀錄');
+  var dateStr = data.date ? data.date.replace(/-/g, '/') : Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy/MM/dd");
+  
+  var lastRow = sheet.getLastRow();
+  var targetRow = lastRow + 1;
+  if (lastRow > 1) {
+    var startCheck = Math.max(2, lastRow - 10);
+    var dateData = sheet.getRange(startCheck, 2, lastRow - startCheck + 1, 1).getValues();
+    for (var i = 0; i < dateData.length; i++) {
+       var d = dateData[i][0];
+       var dStr = (d instanceof Date) ? Utilities.formatDate(d, Session.getScriptTimeZone(), "yyyy/MM/dd") : d;
+       if (dStr === dateStr) { targetRow = startCheck + i; break; }
+    }
+  }
+
+  var totalCols = 42; // 到 AP 欄
+  var currentData = [];
+  if (targetRow <= lastRow) {
+      var fetched = sheet.getRange(targetRow, 1, 1, totalCols).getValues()[0];
+      currentData = fetched;
+      if (currentData.length < totalCols) {
+          for(var k=currentData.length; k<totalCols; k++) currentData.push("");
+      }
+  } else {
+      currentData = new Array(totalCols).fill("");
+      currentData[0] = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy/MM/dd HH:mm:ss");
+      currentData[1] = dateStr;
+  }
+
+  // 資料映射
+  if (data.q3) currentData[2] = data.q3;
+  if (data.q4) currentData[3] = data.q4;
+  if (data.q5) currentData[4] = data.q5;
+  if (data.q6) currentData[5] = data.q6;
+  if (data.q7) currentData[6] = data.q7;
+  if (data.q8) currentData[7] = data.q8;
+  if (data.q9) currentData[8] = data.q9;
+  if (data.q10) currentData[9] = data.q10;
+  if (data.q11) currentData[10] = data.q11;
+  if (data.q12) currentData[11] = data.q12 + (data.q12.toString().indexOf('%') > -1 ? '' : '%');
+
+  if (data.q89) currentData[15] = data.q89;
+  if (data.q91) currentData[17] = data.q91;
+  if (data.q93) currentData[18] = data.q93;
+  if (data.q94) currentData[19] = data.q94;
+  if (data.q95) currentData[20] = data.q95;
+  if (data.q96) currentData[21] = data.q96;
+  if (data.q97) currentData[22] = data.q97;
+  if (data.q98) currentData[23] = data.q98;
+  if (data.q99) currentData[24] = data.q99;
+  if (data.content) currentData[25] = data.content;
+
+  if (data.score) currentData[26] = data.score;
+  if (data.is_recording) currentData[27] = data.is_recording;
+  if (data.wealth_evidence) currentData[28] = data.wealth_evidence;
+  if (data.invest_practice) currentData[29] = data.invest_practice;
+
+  if (data.career_review) {
+      var parts = data.career_review.split('|');
+      parts.forEach(function(p) {
+         p = p.trim();
+         if (p.indexOf('【人】') === 0) currentData[30] = p.replace('【人】', '').trim();
+         if (p.indexOf('【事】') === 0) currentData[31] = p.replace('【事】', '').trim();
+         if (p.indexOf('【焦點】') > -1 || p.indexOf('【進度】') > -1) currentData[32] = p.replace(/【.*】/, '').trim();
+      });
+  }
+
+  if (data.health_status) {
+      currentData[33] = data.health_status;
+      var hParts = data.health_status.split('|');
+      hParts.forEach(function(p) {
+         p = p.trim();
+         if (p.indexOf('運動:') === 0) currentData[34] = p.replace('運動:', '').trim();
+         if (p.indexOf('保養:') === 0) currentData[35] = p.replace('保養:', '').trim();
+      });
+  }
+
+  if (data.declutter_item) {
+     var itemStr = data.declutter_item;
+     var match = itemStr.match(/(.*)\s\((.*)\)/);
+     if (match) {
+        currentData[36] = match[1].trim();
+        currentData[37] = match[2].trim();
+     } else {
+        currentData[36] = itemStr;
+     }
+  }
+
+  // 習慣 Check -> AM(38), AN(39), AO(40), AP(41)
+  // 如果是錄影日，清空；否則寫入
+  if (data.is_recording === "是") {
+      currentData[38] = ""; currentData[39] = ""; currentData[40] = ""; currentData[41] = "";
+  } else {
+      if (data.q86 !== undefined) currentData[38] = data.q86;
+      if (data.q87 !== undefined) currentData[39] = data.q87;
+      if (data.q88 !== undefined) currentData[40] = data.q88;
+      if (data.q90 !== undefined) currentData[41] = data.q90;
+  }
+
+  if (data.note) {
+     var nParts = data.note.split('|');
+     if (!currentData[15] && nParts[0]) currentData[15] = nParts[0].trim();
+     if (!currentData[17] && nParts[1]) currentData[17] = nParts[1].replace('感受:', '').trim();
+  }
+
+  if (targetRow > lastRow) {
+      sheet.appendRow(currentData);
+  } else {
+      sheet.getRange(targetRow, 1, 1, currentData.length).setValues([currentData]);
+  }
+}
+
+// ... 以下 getDashboardData, getCalendarEvents, doPost 等函式保持不變 ...
+function getDashboardData() {
+  var result = { 
+    todayExpense: 0, monthExpense: 0, quote: getDailyQuote(), goalText: "", 
+    investCalcData: [], profitData: [], 
+    gratitudeList: [], manifestationList: [], 
+    widget: { profitSum: 0, profitPercent: "0%", goal: "無目標" }
+  };
+  try {
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var goalSs = SpreadsheetApp.openById(GOAL_SPREADSHEET_ID);
+    var today = new Date();
+    var todayStr = Utilities.formatDate(today, Session.getScriptTimeZone(), "yyyy/MM/dd");
+    var yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    var yesterdayStr = Utilities.formatDate(yesterday, Session.getScriptTimeZone(), "yyyy/MM/dd");
+
+    // 1. Expense
+    var sheet = ss.getSheetByName('聚寶盆');
+    if (sheet && sheet.getLastRow() > 1) {
+      var startRow = Math.max(1, sheet.getLastRow() - 500); 
+      var data = sheet.getRange(startRow, 1, sheet.getLastRow()-startRow+1, 3).getValues(); 
+      var daySum = 0; 
+      for (var i = 0; i < data.length; i++) {
+        if (data[i][1] === '記帳') {
+           var rDate = data[i][0];
+           var rDateStr = (rDate instanceof Date) ? Utilities.formatDate(rDate, Session.getScriptTimeZone(), "yyyy/MM/dd") : (typeof rDate === 'string' && rDate.indexOf(todayStr) > -1 ? todayStr : "");
+           if (rDateStr === todayStr) daySum += parseAmount(data[i][2]);
+        }
+      }
+      result.todayExpense = daySum;
+    }
+    // 2. Month Expense
+    var statsSheet = ss.getSheetByName('消費統計');
+    if (statsSheet && statsSheet.getLastRow() > 0) {
+        var lastRow = statsSheet.getLastRow();
+        var startRead = Math.max(1, lastRow - 24); 
+        var targetDate = new Date(today);
+        if (targetDate.getDate() < 5) targetDate.setMonth(targetDate.getMonth() - 1);
+        targetDate.setDate(5);
+        var targetDateStr = Utilities.formatDate(targetDate, Session.getScriptTimeZone(), "yyyy/M/d");
+        var statsData = statsSheet.getRange(startRead, 1, lastRow - startRead + 1, 23).getValues(); 
+        for (var i = 0; i < statsData.length; i++) {
+            var dStr = (statsData[i][0] instanceof Date) ? Utilities.formatDate(statsData[i][0], Session.getScriptTimeZone(), "yyyy/M/d") : statsData[i][0];
+            if (dStr === targetDateStr) { result.monthExpense = parseAmount(statsData[i][22]); break; }
+        }
+    }
+    // 3. Journal
+    var recordSheet = goalSs.getSheetByName('紀錄');
+    if (recordSheet && recordSheet.getLastRow() > 1) {
+        var lastRow = recordSheet.getLastRow();
+        var startRead = Math.max(1, lastRow - 50); 
+        var recordData = recordSheet.getRange(startRead, 1, lastRow - startRead + 1, 26).getValues(); 
+        var todayGoalC = "", yesterdayPlanY = ""; 
+        for (var i = recordData.length - 1; i >= 0; i--) {
+            var row = recordData[i];
+            var dateVal = row[1]; 
+            var dateStr = (dateVal instanceof Date) ? Utilities.formatDate(dateVal, Session.getScriptTimeZone(), "yyyy/MM/dd") : dateVal;
+            if (dateStr === todayStr && row[2] && todayGoalC === "") todayGoalC = row[2];
+            if (dateStr === yesterdayStr && row[24] && yesterdayPlanY === "") yesterdayPlanY = row[24];
+            if (row[25] && result.gratitudeList.length < 5) result.gratitudeList.push({ date: dateStr, content: row[25] });
+            if (row[18] && result.manifestationList.length < 3) { 
+                 var s1 = "style='color:#999;'", s2 = "style='color:#333;'";
+                 var content = `<span ${s1}>感謝一切,我在</span> <span ${s2}>${row[18]}</span> <span ${s1}>之前</span> <span ${s2}>${row[19]}</span>`;
+                 if(row[20]) content += ` <span ${s1}>我感覺</span> <span ${s2}>${row[20]}</span>`;
+                 result.manifestationList.push({ date: dateStr, content: content }); 
+            }
+        }
+        result.goalText = (yesterdayPlanY && todayGoalC) ? yesterdayPlanY + " ｜ " + todayGoalC : (yesterdayPlanY || todayGoalC || "");
+        result.widget.goal = result.goalText || "今日未設定目標";
+    }
+    // 4. Invest
+    var investSheet = ss.getSheetByName('投資計算') || ss.getSheetByName('投資計算表');
+    if (investSheet) {
+      var lastRow = investSheet.getLastRow();
+      if (lastRow > 0) {
+        var widgetData = investSheet.getRange(lastRow, 1, 1, 10).getValues()[0];
+        result.widget.profitSum = parseAmount(widgetData[7]); 
+        result.widget.profitPercent = (typeof widgetData[6] === 'number') ? (widgetData[6]*100).toFixed(2) + '%' : widgetData[6];
+        var startRead = Math.max(2, lastRow - 60);
+        var rawData = investSheet.getRange(startRead, 1, lastRow - startRead + 1, 10).getValues();
+        var header = investSheet.getRange(1, 1, 1, 10).getValues()[0].map(String);
+        result.investCalcData.push(header);
+        var targetKeys = []; [-1, 0, 1].forEach(offset => { var d = new Date(today.getFullYear(), today.getMonth() + offset, 1); targetKeys.push(d.getFullYear() + "-" + d.getMonth()); });
+        for (var i = 0; i < rawData.length; i++) {
+          var cellDate = (rawData[i][0] instanceof Date) ? rawData[i][0] : new Date(Date.parse(rawData[i][0]));
+          if (cellDate && !isNaN(cellDate)) {
+             if (targetKeys.includes(cellDate.getFullYear() + "-" + cellDate.getMonth())) result.investCalcData.push(formatInvestRow(rawData[i])); 
+          }
+        }
+      }
+    }
+    // 5. Profit
+    var profitSheet = ss.getSheetByName('損益試算') || ss.getSheetByName('損益試算表');
+    if (profitSheet) {
+      var displayValues = profitSheet.getRange("A27:I38").getDisplayValues(); 
+      var rawValues = profitSheet.getRange("A27:I38").getValues(); 
+      if (rawValues.length > 2) {
+        var checkRow = rawValues[2]; 
+        var finalData = displayValues.map(r => [r[0]]);
+        for (var c = 1; c < checkRow.length; c++) { if (checkRow[c] !== "" && checkRow[c] != null) { displayValues.forEach((row, rIdx) => finalData[rIdx].push(row[c])); } }
+        result.profitData = finalData;
+      }
+    }
+    return result;
+  } catch (e) { console.error("讀取錯誤: " + e.message); return result; }
+}
+
+function getCalendarEvents() {
+  var allEvents = [];
+  var now = new Date();
+  var endDate = new Date(); endDate.setDate(now.getDate() + 7);
+  var weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+  CALENDARS_CONFIG.forEach(function(config) {
+    try {
+      var cal = CalendarApp.getCalendarById(config.id);
+      if (cal) {
+        cal.getEvents(now, endDate).forEach(function(evt) {
+           var start = evt.getStartTime();
+           var dateDisplay = (start.getMonth() + 1) + "/" + start.getDate() + " (" + weekDays[start.getDay()] + ")";
+           var titleDisplay = evt.getTitle();
+           var isRecord = titleDisplay.indexOf('錄影') > -1; 
+           if (!evt.isAllDayEvent()) titleDisplay = "[" + Utilities.formatDate(start, Session.getScriptTimeZone(), "HH:mm") + "] " + titleDisplay;
+           allEvents.push({ timestamp: start.getTime(), date: dateDisplay, title: titleDisplay, color: isRecord ? '#d35400' : config.color });
+        });
+      }
+    } catch (e) { console.error("日曆讀取失敗: " + config.id); }
+  });
+  return allEvents.sort(function(a, b) { return a.timestamp - b.timestamp; });
+}
+
+function formatInvestRow(row) {
+    return row.map(function(item, idx) {
+         if (idx === 0 && item instanceof Date) return Utilities.formatDate(item, Session.getScriptTimeZone(), "yyyy/M");
+         if (item instanceof Date) return Utilities.formatDate(item, Session.getScriptTimeZone(), "yyyy/M/d");
+         if (typeof item === 'number') { if (idx === 6) return (item * 100).toFixed(2) + '%'; return Math.round(item).toString(); }
+         return item === "" ? "" : item.toString();
+    });
+}
+
+function parseAmount(val) {
+  if (!val) return 0;
+  if (typeof val === 'number') return val;
+  return parseFloat(val.toString().replace(/,/g, '')) || 0;
+}
+
+function getDailyQuote() {
+  var quotes = ["簡單生活不是少，而是剛剛好。", "花若盛開，蝴蝶自來。", "接受當下，就是最好的顯化。", "富有不是擁有多，而是要求少。", "今天的累積，是明天的奇蹟。"];
+  return quotes[Math.floor(Date.now() / 86400000) % quotes.length];
+}
+
+function doPost(e) {
+  if (e && e.postData) {
+      try {
+          var data = JSON.parse(e.postData.contents);
+          var ss = SpreadsheetApp.openById(GOAL_SPREADSHEET_ID);
+          handleJournalEntry(ss, data);
+          return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
+      } catch(err) {
+          return ContentService.createTextOutput(JSON.stringify({result: "error", message: err.message})).setMimeType(ContentService.MimeType.JSON);
+      }
+  }
+  return ContentService.createTextOutput(JSON.stringify({result: "Use Firebase Queue for other writes"})).setMimeType(ContentService.MimeType.JSON);
+}
+
+function firebasePut(path, data) { UrlFetchApp.fetch(FIREBASE_URL + path + ".json?auth=" + FIREBASE_SECRET, { method: "PUT", payload: JSON.stringify(data), muteHttpExceptions: true }); }
+function firebaseGet(path) { var res = UrlFetchApp.fetch(FIREBASE_URL + path + ".json?auth=" + FIREBASE_SECRET, { muteHttpExceptions: true }); return (res.getResponseCode() === 200) ? JSON.parse(res.getContentText()) : null; }
+function firebaseDelete(path) { UrlFetchApp.fetch(FIREBASE_URL + path + ".json?auth=" + FIREBASE_SECRET, { method: "DELETE", muteHttpExceptions: true }); }
+function firebasePatch(path, data) { UrlFetchApp.fetch(FIREBASE_URL + path + ".json?auth=" + FIREBASE_SECRET, { method: "PATCH", payload: JSON.stringify(data), muteHttpExceptions: true }); }
+
+function handleManualSync(e) {
+  var range = e.range;
+  var sheet = range.getSheet();
+  if (sheet.getName() === "損益試算" && range.getA1Notation() === "A27") {
+    var isChecked = range.getValue();
+    if (isChecked === true) {
+      syncDashboardToFirebase(); 
+      range.setValue(false);     
+    }
+  }
+}
