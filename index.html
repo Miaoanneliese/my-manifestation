@@ -371,7 +371,7 @@
                     </div>
 
                     <!-- NEW: Habit Section -->
-                    <div class="routine-section">
+                    <div class="routine-section" id="section-habit">
                          <div class="routine-header">HABIT CHECK</div>
                          <div class="toggle-row">
                              <span id="lbl_hab_1" style="font-size: 0.9rem;">讀取中...</span>
@@ -555,14 +555,17 @@
         const investWrapper = document.getElementById('wrapper-invest');
         const declutterSection = document.getElementById('section-declutter');
         const sportSelect = document.getElementById('sport_execution');
+        const habitSection = document.getElementById('section-habit');
         
         if (isRecording) {
             // 錄影日：鎖定投資與斷捨離，但運動保留
             if(investWrapper) investWrapper.classList.add('disabled-zone');
             if(declutterSection) declutterSection.classList.add('disabled-zone');
+            if(habitSection) habitSection.classList.add('disabled-zone');
             
             if(investWrapper) investWrapper.querySelectorAll('input').forEach(el => el.disabled = true);
             if(declutterSection) declutterSection.querySelectorAll('input, select').forEach(el => el.disabled = true);
+            if(habitSection) habitSection.querySelectorAll('input').forEach(el => el.disabled = true);
 
             beautySelect.value = 'Plan B';
             showToast("錄影日：已鎖定簡化模式");
@@ -570,9 +573,11 @@
             // 恢復
             if(investWrapper) investWrapper.classList.remove('disabled-zone');
             if(declutterSection) declutterSection.classList.remove('disabled-zone');
+            if(habitSection) habitSection.classList.remove('disabled-zone');
             
             if(investWrapper) investWrapper.querySelectorAll('input').forEach(el => el.disabled = false);
             if(declutterSection) declutterSection.querySelectorAll('input, select').forEach(el => el.disabled = false);
+            if(habitSection) habitSection.querySelectorAll('input').forEach(el => el.disabled = false);
             
             beautySelect.value = ""; 
         }
@@ -658,32 +663,44 @@
 
       function updateProgress() {
         const isRecording = document.getElementById('is_recording_day').checked;
-        let total = 6; 
+        let total = 10; // 基礎 6 + 習慣 4 = 10
         
         if (isRecording) {
-            total = 4;
+            total = 4; // 錄影日：只算 職業、運動、保養、財富 (排除投資、斷捨離、習慣)
         }
 
         let completed = 0;
         
-        // 職業
+        // 1. 職業 (Career)
         if (document.getElementById('career_people').value && document.getElementById('career_next_focus').value) completed++;
         
-        // 健康 (修正：如果是錄影日，只看運動是否有填)
+        // 2. 健康 (Health)
         if (isRecording) {
              if (document.getElementById('sport_execution').value) completed++;
         } else {
              if (document.getElementById('sport_execution').value) completed++;
-             if (document.getElementById('check_duolingo').checked && document.getElementById('check_reading').checked) completed = Math.min(total, completed + 0.5); 
+             // 技能 (Skills) - 0.5分
+             if (document.getElementById('check_duolingo').checked && document.getElementById('check_reading').checked) completed += 0.5; 
         }
         
+        // 3. 美容 (Beauty)
         if (document.getElementById('beauty_routine').value) completed++;
         
+        // 4. 財富 (Wealth)
         if (document.getElementById('wealth_evidence').value) completed++;
         
+        // 非錄影日額外項目
         if (!isRecording) {
+            // 5. 投資
             if (document.getElementById('invest_practice').value) completed++;
+            // 6. 斷捨離
             if (document.getElementById('declutter_item').value) completed++;
+            
+            // 7. 習慣 1~4
+            if (document.getElementById('j_q86').checked) completed++;
+            if (document.getElementById('j_q87').checked) completed++;
+            if (document.getElementById('j_q88').checked) completed++;
+            if (document.getElementById('j_q90').checked) completed++;
         }
 
         let percent = (total === 0) ? 0 : Math.floor((completed / total) * 100);
