@@ -24,7 +24,22 @@
       }
       
       * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-      body { margin: 0; font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; letter-spacing: 0.03em; }
+      
+      /* 優化：防止頁面彈性拉動 (Overscroll) 產生的瀏覽器介面干擾，模擬 App 質感 */
+      body { 
+          margin: 0; 
+          font-family: 'Noto Sans TC', sans-serif; 
+          background-color: var(--bg-color); 
+          color: var(--text-main); 
+          padding-bottom: 80px; 
+          letter-spacing: 0.03em;
+          overscroll-behavior-y: none;
+          user-select: none; /* 防止長按選取文字 */
+          -webkit-user-select: none;
+      }
+      /* 允許輸入框選取文字 */
+      input, textarea { user-select: text; -webkit-user-select: text; }
+
       header { background-color: var(--bg-color); padding: 25px 20px 10px; }
       
       .date-weather-box { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--text-main); padding-bottom: 10px; }
@@ -514,18 +529,36 @@
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       const db = firebase.database();
       
+      // === 核心修正：時區處理函式 ===
+      // 強制回傳當地時間的 YYYY-MM-DD 格式，解決凌晨時段 new Date().toISOString() 回傳前一天的問題
+      function getLocalISOString() {
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = (now.getMonth() + 1).toString().padStart(2, '0');
+          const day = now.getDate().toString().padStart(2, '0');
+          return `${year}-${month}-${day}`;
+      }
+
+      function setLocalToday(id) {
+          const el = document.getElementById(id);
+          if (el) {
+              el.value = getLocalISOString();
+          }
+      }
+
       window.onload = function() {
         updateDate(); getWeather(); setupDashboardListener(); 
         setupMidnightRefresh(); 
         
         fetchCurrentMission();
 
-        var today = new Date();
-        if(document.getElementById('s_date')) document.getElementById('s_date').valueAsDate = today;
-        if(document.getElementById('d_date')) document.getElementById('d_date').valueAsDate = today;
-        if(document.getElementById('j_date_start')) document.getElementById('j_date_start').valueAsDate = today;
-        if(document.getElementById('j_date_middle')) document.getElementById('j_date_middle').valueAsDate = today;
-        if(document.getElementById('j_date_end')) document.getElementById('j_date_end').valueAsDate = today;
+        // 使用新函式設定預設日期，避免時區錯誤
+        setLocalToday('s_date');
+        setLocalToday('d_date');
+        setLocalToday('j_date_start');
+        setLocalToday('j_date_middle');
+        setLocalToday('j_date_end');
+
         if(document.getElementById('s_action')) updateReasonOptions();
         if(document.getElementById('d_trend')) updateDayTradeReason();
         
@@ -537,6 +570,14 @@
         document.getElementById('is_recording_day').addEventListener('change', function() {
             autoSelectRoutine();
         });
+        
+        // 額外提示功能：若在普通瀏覽器分頁開啟，提示加入主畫面
+        if (!window.navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
+             console.log("建議加入主畫面以獲得最佳全螢幕體驗");
+        }
+        
+        // 禁止長按右鍵選單 (App 質感)
+        document.addEventListener('contextmenu', event => event.preventDefault());
       };
 
       function setupMidnightRefresh() {
@@ -854,7 +895,8 @@
         var btn = event.target; 
         btn.disabled = true; 
         var content = document.getElementById('journal-text').value; 
-        var today = new Date().toISOString().substring(0, 10);
+        // 修正：使用當地時間，避免凌晨跨日時變成前一天
+        var today = getLocalISOString();
         pushToFirebaseQueue('journal', { journalType: 'gratitude', content: content, date: today }, "已保存", () => { document.getElementById('journal-text').value = ""; btn.disabled = false; }); 
       }
       
