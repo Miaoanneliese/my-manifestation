@@ -257,7 +257,7 @@
                 <div class="card-label">本月支出</div>
                 <div class="big-number" id="month-expense" style="color: var(--text-main);">...</div>
             </div>
-            <a href="https://docs.google.com/spreadsheets/d/1vRIp7aP_Fz8fCClQ8PzQs-412KsM_uvyY3WsEqUedxg/edit#gid=1703556943" target="_blank" class="action-btn-container link-btn grid-c4">
+            <a href="https://docs.google.com/spreadsheets/d/1vRIp7aP_Fz8fCClQ8PzQs-412KsM_uvyY3WsEqUedxg/edit#gid=1703556943" target="sheet_view" class="action-btn-container link-btn grid-c4">
                 <div class="btn-icon"><span class="material-icons-round">table_view</span></div>
                 <div class="btn-text">表格</div>
             </a>
@@ -273,15 +273,12 @@
                 </div>
                 
                 <div class="muji-card" style="display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 0;">
-                    <!-- Header: 只顯示 Cycle ID -->
                     <div class="goal-header-group">
                          <div class="card-label" style="margin:0;">目標實踐</div>
                          <div class="cycle-badge" id="cycle-id">Cycle ...</div>
                     </div>
     
-                    <!-- 內容: 改為三行條列 (年 / 季 / 周) -->
                     <div class="macro-goal-container">
-                        <!-- 第一行: 年 -->
                         <div class="macro-row" style="display: flex; gap: 10px;">
                             <div style="flex: 1; display: flex; align-items: baseline; min-width: 0;">
                                 <span class="macro-label">年</span>
@@ -293,10 +290,8 @@
                             </div>
                         </div>
                         
-                        <!-- 第三行: 周 (日期範圍 + 目標) -->
                         <div class="macro-row" style="margin-top: 8px;">
                             <span class="macro-label">周</span>
-                            <!-- 日期範圍顯示在這裡 -->
                             <span id="cycle-range-display" class="date-suffix" style="margin-right: 8px; color: #999; font-size: 0.75rem; font-weight: 500;"></span>
                             <span id="goal-weekly" class="macro-text" onclick="toggleText(this)">...</span>
                         </div>
