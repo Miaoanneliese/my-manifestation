@@ -8,16 +8,17 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-      /* --- Muji 風格色系調整 --- */
+      /* --- Muji 風格色系 --- */
       :root { 
-          --bg-color: #F9F9F6;        /* 更溫暖的米白紙張色 */
+          --bg-color: #F9F9F6; 
           --card-bg: #FFFFFF; 
-          --text-main: #444444;       /* 深灰取代純黑，視覺更柔和 */
+          --text-main: #4a4a4a; 
           --text-sub: #999999; 
-          --border-color: #E6E6E6;    /* 極淡的邊框 */
-          --muji-red: #990000;        /* 經典無印紅 (稍微暗一點) */
+          --border-color: #EBEBEB;    
+          --muji-red: #8a1c1c; 
           --muji-green: #6c8c6e; 
-          --accent-brown: #948b6b;    /* 牛皮紙色 */
+          --accent-brown: #8D8170; 
+          --tag-bg: #E6E4E0;
           --btn-green: #597e5d; 
           --table-header-bg: #f4f4f0; 
       }
@@ -33,8 +34,7 @@
       
       main { padding: 20px; }
       
-      /* 卡片樣式優化：更扁平，去除多餘陰影 */
-      .muji-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 2px; padding: 15px 20px; margin-bottom: 15px; position: relative; box-shadow: none; display: flex; flex-direction: column; }
+      .muji-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 3px; padding: 15px 20px; margin-bottom: 15px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; }
       .card-label { font-size: 0.7rem; color: var(--text-sub); margin-bottom: 10px; letter-spacing: 1.5px; font-weight: 500; text-transform: uppercase; }
       .muji-title { font-family: 'Noto Serif TC', serif; font-size: 1.4rem; margin: 10px 0 20px; text-align: center; color: var(--muji-red); }
       .big-number { font-size: 1.6rem; font-weight: 300; font-family: 'Noto Serif TC', serif; color: #333; }
@@ -151,24 +151,21 @@
       #toast { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 0.9rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 3000; white-space: nowrap; }
       @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
 
-      /* --- 新增：目標實踐新版樣式 --- */
       .goal-header-group { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px 8px; border-bottom: 1px solid #f0f0f0; }
-      .cycle-badge { background-color: var(--muji-red); color: white; font-size: 0.75rem; padding: 2px 8px; border-radius: 20px; font-weight: 500; letter-spacing: 0.5px; }
+      .cycle-badge { background-color: var(--muji-red); color: white; font-size: 0.75rem; padding: 2px 10px; border-radius: 12px; font-weight: 500; letter-spacing: 0.5px; }
       
       .macro-goal-container { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; background-color: #fff; }
       
-      /* 新增的並排相關樣式 */
-      .macro-row { display: flex; align-items: baseline; margin-bottom: 8px; }
+      .macro-row { display: flex; align-items: baseline; margin-bottom: 10px; width: 100%; }
       .macro-row:last-child { margin-bottom: 0; }
+      .split-container { display: flex; width: 100%; gap: 15px; margin-bottom: 10px; }
+      .split-block { flex: 1; display: flex; align-items: baseline; min-width: 0; } 
       
-      .macro-row.split { display: flex; gap: 15px; margin-top: 8px; justify-content: space-between; }
-      .macro-block { flex: 1; display: flex; align-items: baseline; min-width: 0; }
-      
-      .macro-label { font-size: 0.7rem; color: #fff; background-color: #8D8170; padding: 1px 6px; border-radius: 2px; margin-right: 6px; flex-shrink: 0; letter-spacing: 1px; font-weight: 400; }
-      .macro-label.season { background-color: #aeb6bf; } /* 灰藍 */
-      .macro-label.week { background-color: #9ba0a3; }   /* 灰 */
-      
-      .macro-text { font-size: 0.85rem; color: var(--text-main); line-height: 1.4; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .macro-label { font-size: 0.7rem; color: #555; background-color: var(--tag-bg); padding: 2px 6px; border-radius: 2px; margin-right: 8px; flex-shrink: 0; font-weight: 500; }
+      .macro-text { font-size: 0.85rem; color: var(--text-main); line-height: 1.4; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: color 0.2s; }
+      .macro-text:active { color: #888; }
+      .macro-text.expanded { white-space: normal; overflow: visible; word-break: break-all; }
+      .date-suffix { font-size: 0.75rem; color: #aaa; margin-left: 6px; letter-spacing: 0; }
 
       .cycle-list-container { flex: 1; overflow-y: auto; padding: 8px 15px 12px; }
       .cycle-list-item { padding: 8px 0; border-bottom: 1px dashed #eee; display: flex; align-items: flex-start; }
@@ -282,19 +279,21 @@
                     </div>
     
                     <div class="macro-goal-container">
-                        <div class="macro-row">
-                            <span class="macro-label">年</span> 
-                            <span id="goal-year" class="macro-text">載入中...</span>
+                        <div class="split-container">
+                            <div class="split-block">
+                                <span class="macro-label">年</span>
+                                <span id="goal-year" class="macro-text" onclick="toggleText(this)">...</span>
+                            </div>
+                            <div class="split-block">
+                                <span class="macro-label">季</span>
+                                <span id="goal-season" class="macro-text" onclick="toggleText(this)">...</span>
+                            </div>
                         </div>
-                        <div class="macro-row split">
-                            <div class="macro-block">
-                                <span class="macro-label season">季</span>
-                                <span id="goal-season" class="macro-text">載入中...</span>
-                            </div>
-                            <div class="macro-block">
-                                <span class="macro-label week">周</span>
-                                <span id="goal-weekly" class="macro-text">載入中...</span>
-                            </div>
+                        
+                        <div class="macro-row">
+                            <span class="macro-label">周</span>
+                            <span id="cycle-range-display" class="date-suffix"></span>
+                            <span id="goal-weekly" class="macro-text" onclick="toggleText(this)" style="margin-left: 8px;">...</span>
                         </div>
                     </div>
     
@@ -329,8 +328,7 @@
           <div style="padding: 0 10px;">
             <button class="journal-section-btn" onclick="openJournalModal('start')"><span>一日之始</span> <span class="material-icons-round">chevron_right</span></button>
             <button class="journal-section-btn" onclick="openJournalModal('middle')"><span>一日之中 (盤中紀錄)</span> <span class="material-icons-round">chevron_right</span></button>
-            <button class="journal-section-btn" onclick="openJournalModal('end')"><span>一日之末 (顯化與反思)</span> <span class="material-icons-round">chevron_right</span></button>
-            <button class="journal-section-btn" onclick="openJournalModal('goal')"><span>實踐回報</span> <span class="material-icons-round">chevron_right</span></button>
+            <button class="journal-section-btn" onclick="openJournalModal('end')"><span>一日之末</span> <span class="material-icons-round">chevron_right</span></button>
           </div>
         </div>
       </div>
@@ -343,37 +341,12 @@
     <div id="expense-modal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>新增收支</h3><span class="material-icons-round close-btn" onclick="closeModal()">close</span></div><form id="modal-form"><div class="input-group"><label>金額</label><input type="number" id="amount" required placeholder="0" inputmode="decimal" style="font-size: 1.5rem; text-align: center;"></div><div class="input-group"><label>消費方式</label><div class="chip-group"><label class="muji-chip"><input type="radio" name="paymentMethod" value="現金" checked><span>現金</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="悠遊卡"><span>悠遊卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="台新Gogoro"><span>台新Gogoro</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="富邦J卡"><span>富邦J卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="中信卡"><span>中信卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="玉山卡"><span>玉山卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="新光卡"><span>新光卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="兆豐卡"><span>兆豐卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="串暫欠"><span>串暫欠</span></label></div></div><div class="input-group" style="display:flex; justify-content:space-between; align-items:center;"><label style="margin:0;">消費拆分?</label><label class="switch"><input type="checkbox" id="isSplit" onchange="toggleSplitOptions()"><span class="slider round"></span></label></div><div id="split-section" style="display:none; background:#fafafa; padding:10px; border:1px solid #eee; margin-bottom:15px;"><div class="input-group"><label>拆分方式</label><select id="splitMethod" onchange="toggleSplitInputs()"><option value="一人一半">一人一半</option><option value="潘全額">潘全額</option><option value="潘部分">潘部分</option><option value="他人">他人</option></select></div><div id="input-pan-part" class="input-group" style="display:none;"><label>潘 部份金額</label><input type="number" id="panAmount"></div><div id="input-others" class="input-group" style="display:none;"><label>他人 金額</label><input type="number" id="othersAmount"></div><div id="input-chuan-pay" class="input-group" style="display:none;"><label>串 支付 (選填)</label><input type="number" id="chuanPay" placeholder="0"></div></div><div class="input-group" style="display:flex; align-items:center; gap:10px;"><input type="checkbox" id="isTobacco" style="width:auto;"><label for="isTobacco" style="margin:0;">是否含菸</label></div><div class="input-group"><label>備註</label><input type="text" id="note"></div><button type="button" class="btn-muji" onclick="submitModalExpense()">確認儲存</button></form></div></div>
     <div id="modal-start" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>一日之始</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('start')">close</span></div><form onsubmit="submitJournalPart('start'); return false;"><div class="input-group"><label>日期</label><input type="date" id="j_date_start" required></div><div class="input-group"><label>今日目標</label><input type="text" id="j_q3"></div><div class="input-group"><label>是否能靜心看盤</label><select id="j_q4"><option value="是">是</option><option value="否">否</option></select></div><button type="submit" class="btn-muji">儲存</button></form></div></div>
     <div id="modal-middle" class="modal-overlay"><div class="modal-content" style="max-height:85vh; overflow-y:auto;"><div class="modal-header"><h3>一日之中</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('middle')">close</span></div><form onsubmit="submitJournalPart('middle'); return false;"><div class="input-group"><label>日期</label><input type="date" id="j_date_middle" required></div><div class="input-group"><label>是否進行交易</label><select id="j_q5"><option value="否">否</option><option value="買進">買進</option><option value="賣出">賣出</option><option value="當沖">當沖</option></select></div><hr style="border:0; border-top:1px dashed #eee; margin:15px 0;"><h4 style="margin:0 0 10px; color:#666;">帳戶紀錄</h4><div class="flex-row"><div class="flex-col input-group"><label>帳面金額</label><input type="number" id="j_q6"></div><div class="flex-col input-group"><label>成本</label><input type="number" id="j_q7"></div></div><div class="flex-row"><div class="flex-col input-group"><label>淨利%</label><input type="number" id="j_q8" step="0.01"></div><div class="flex-col input-group"><label>銀行餘額</label><input type="number" id="j_q9"></div></div><hr style="border:0; border-top:1px dashed #eee; margin:15px 0;"><h4 style="margin:0 0 10px; color:#666;">大盤紀錄</h4><div class="input-group"><label>今日大事件</label><input type="text" id="j_q10"></div><div class="flex-row"><div class="flex-col input-group"><label>大盤指數</label><input type="number" id="j_q11"></div><div class="flex-col input-group"><label>漲跌%</label><input type="number" id="j_q12" step="0.01"></div></div><button type="submit" class="btn-muji">儲存</button></form></div></div>
+    
     <div id="modal-end" class="modal-overlay">
-        <div class="modal-content" style="max-height:85vh; overflow-y:auto;">
+        <div class="modal-content" style="max-height:90vh; overflow-y:auto;">
             <div class="modal-header"><h3>一日之末</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('end')">close</span></div>
             <form onsubmit="submitJournalPart('end'); return false;">
                 <div class="input-group"><label>日期</label><input type="date" id="j_date_end" required></div>
-                <div class="input-group"><label>今日我的事件</label><input type="text" id="j_q89"></div>
-                <div class="input-group"><label>今天執行行動</label><input type="text" id="j_q90"></div>
-                <div class="input-group"><label>今日能量/感受</label><input type="text" id="j_q91"></div>
-                <hr style="border:0; border-top:1px dashed #eee; margin:15px 0;"><h4 style="margin:0 0 10px; color:#d35400;">顯化日記</h4>
-                <div class="input-group"><label>感謝一切,我在...</label><input type="text" id="j_q93"></div>
-                <div class="input-group"><label>之前...</label><input type="text" id="j_q94"></div>
-                <div class="input-group"><label>我感覺...</label><input type="text" id="j_q95"></div>
-                <div class="input-group"><label>並且我...</label><input type="text" id="j_q96"></div>
-                <div class="input-group"><label>最後我想...(感謝)</label><input type="text" id="j_q97"></div>
-                <div class="input-group"><label>完成目標的我今天會做什麼</label><input type="text" id="j_q98"></div>
-                <div class="input-group"><label>明日期望/待辦</label><input type="text" id="j_q99"></div>
-                <div style="background:#f9f9f9; padding:10px; border-radius:4px; margin-bottom:15px; margin-top:20px;">
-                    <div class="toggle-row"><label>一日丟一物</label><label class="switch"><input type="checkbox" id="j_q86"><span class="slider round"></span></label></div>
-                    <div class="toggle-row"><label>進行刮痧</label><label class="switch"><input type="checkbox" id="j_q87"><span class="slider round"></span></label></div>
-                    <div class="toggle-row"><label>是否運動</label><label class="switch"><input type="checkbox" id="j_q88"><span class="slider round"></span></label></div>
-                </div>
-                <button type="submit" class="btn-muji">儲存反思</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="modal-goal" class="modal-overlay">
-        <div class="modal-content" style="max-height:85vh; overflow-y:auto;" id="tab-daily">
-            <div class="modal-header"><h3>實踐回報</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('goal')">close</span></div>
-            <form onsubmit="submitJournalPart('goal'); return false;">
-                <div class="input-group"><label>日期</label><input type="date" id="j_date_goal" required></div>
 
                 <div style="margin-bottom:15px; background:#fafafa; padding:10px; border-radius:4px;">
                       <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.8rem; color: #888;">
@@ -394,7 +367,33 @@
                                 <span class="slider round"></span>
                             </label>
                         </div>
-                        <div style="font-size: 0.75rem; color: #999; margin-top: 5px;">*開啟後，部分項目將被鎖定。</div>
+                        <div style="font-size: 0.75rem; color: #999; margin-top: 5px;">*開啟後，運動與保養將進入簡化模式。</div>
+                    </div>
+
+                    <div class="routine-section">
+                        <div class="routine-header">DAILY REVIEW</div>
+                        <div class="input-group">
+                            <label>今日我的事件</label>
+                            <input type="text" id="j_q89">
+                        </div>
+                        <div class="input-group">
+                            <label>今日能量/感受</label>
+                            <input type="text" id="j_q91">
+                        </div>
+                    </div>
+
+                    <div class="routine-section" id="section-wealth">
+                        <div class="routine-header">WEALTH & MANIFESTATION</div>
+                        <div class="input-group">
+                            <label id="lbl_wealth_evidence">💰 金錢顯化</label>
+                            <textarea id="wealth_evidence" rows="2" placeholder="..."></textarea>
+                        </div>
+                        <div class="input-group" id="wrapper-invest">
+                            <label id="lbl_invest_practice">📈 投資實戰</label>
+                            <div class="chip-group" id="invest-chips" style="margin-bottom: 8px;">
+                                </div>
+                            <input type="text" id="invest_practice" placeholder="手動補充...">
+                        </div>
                     </div>
 
                     <div class="routine-section">
@@ -416,9 +415,15 @@
                     <div class="routine-section" id="section-health">
                         <div class="routine-header">HEALTH & SKILLS</div>
                         <div class="chip-group" id="health-chips-container" style="margin-bottom: 15px;">
-                            <label class="muji-chip"><input type="checkbox" id="check_sport"><span id="lbl_check_sport">運動</span></label>
                             <label class="muji-chip"><input type="checkbox" id="check_duolingo"><span id="lbl_check_duolingo">日文</span></label>
                             <label class="muji-chip"><input type="checkbox" id="check_reading"><span id="lbl_check_reading">閱讀</span></label>
+                        </div>
+                        <div class="input-group">
+                            <label id="lbl_sport_execution">運動執行</label>
+                            <select id="sport_execution" class="mini-select">
+                                <option value="">未執行</option>
+                                <option value="Plan B">Plan B</option>
+                                </select>
                         </div>
                         <div class="input-group">
                             <label id="lbl_beauty_routine">美容保養</label>
@@ -428,20 +433,6 @@
                                 <option value="Hair/Foot">洗髮泡腳</option>
                                 <option value="Plan B">基礎清潔</option>
                             </select>
-                        </div>
-                    </div>
-
-                    <div class="routine-section" id="section-wealth">
-                        <div class="routine-header">WEALTH & MANIFESTATION</div>
-                        <div class="input-group">
-                            <label id="lbl_wealth_evidence">💰 金錢顯化</label>
-                            <textarea id="wealth_evidence" rows="2" placeholder="..."></textarea>
-                        </div>
-                        <div class="input-group" id="wrapper-invest">
-                            <label id="lbl_invest_practice">📈 投資實戰</label>
-                            <div class="chip-group" id="invest-chips" style="margin-bottom: 8px;">
-                                </div>
-                            <input type="text" id="invest_practice" placeholder="手動補充...">
                         </div>
                     </div>
 
@@ -461,8 +452,26 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="routine-section">
+                        <div class="routine-header" style="color: #d35400;">顯化日記</div>
+                        <div class="input-group"><label>感謝一切,我在...</label><input type="text" id="j_q93"></div>
+                        <div class="input-group"><label>之前...</label><input type="text" id="j_q94"></div>
+                        <div class="input-group"><label>我感覺...</label><input type="text" id="j_q95"></div>
+                        <div class="input-group"><label>並且我...</label><input type="text" id="j_q96"></div>
+                        <div class="input-group"><label>最後我想...(感謝)</label><input type="text" id="j_q97"></div>
+                        
+                        <div class="input-group">
+                            <label style="color: #555; font-weight:bold;">完成目標的我今天會做什麼</label>
+                            <input type="text" id="j_q98" placeholder="寫入 '紀錄'!X:X">
+                        </div>
+                        <div class="input-group">
+                            <label style="color: #555; font-weight:bold;">明日期望/待辦</label>
+                            <input type="text" id="j_q99" placeholder="寫入 '紀錄'!Y:Y">
+                        </div>
+                    </div>
                 </div>
-                <button type="submit" class="btn-muji">執行回報</button>
+                <button type="submit" class="btn-muji">提交一日總結</button>
             </form>
         </div>
     </div>
@@ -488,11 +497,10 @@
         if(document.getElementById('j_date_start')) document.getElementById('j_date_start').valueAsDate = today;
         if(document.getElementById('j_date_middle')) document.getElementById('j_date_middle').valueAsDate = today;
         if(document.getElementById('j_date_end')) document.getElementById('j_date_end').valueAsDate = today;
-        if(document.getElementById('j_date_goal')) document.getElementById('j_date_goal').valueAsDate = today;
         if(document.getElementById('s_action')) updateReasonOptions();
         if(document.getElementById('d_trend')) updateDayTradeReason();
         
-        document.querySelectorAll('#tab-daily input, #tab-daily select, #tab-daily textarea').forEach(el => {
+        document.querySelectorAll('#modal-end input, #modal-end select, #modal-end textarea').forEach(el => {
             el.addEventListener('input', updateProgress);
             el.addEventListener('change', updateProgress);
         });
@@ -518,31 +526,27 @@
       function autoSelectRoutine() {
         const isRecording = document.getElementById('is_recording_day').checked;
         const beautySelect = document.getElementById('beauty_routine');
-        
         const investWrapper = document.getElementById('wrapper-invest');
         const declutterSection = document.getElementById('section-declutter');
-        const healthChips = document.getElementById('health-chips-container');
+        const sportSelect = document.getElementById('sport_execution');
         
         if (isRecording) {
+            // 錄影日：鎖定投資與斷捨離，但運動保留
             if(investWrapper) investWrapper.classList.add('disabled-zone');
             if(declutterSection) declutterSection.classList.add('disabled-zone');
-            if(healthChips) healthChips.classList.add('disabled-zone');
             
             if(investWrapper) investWrapper.querySelectorAll('input').forEach(el => el.disabled = true);
             if(declutterSection) declutterSection.querySelectorAll('input, select').forEach(el => el.disabled = true);
-            if(healthChips) healthChips.querySelectorAll('input').forEach(el => { el.disabled = true; el.checked = false; }); 
 
             beautySelect.value = 'Plan B';
-            
             showToast("錄影日：已鎖定簡化模式");
         } else {
+            // 恢復
             if(investWrapper) investWrapper.classList.remove('disabled-zone');
             if(declutterSection) declutterSection.classList.remove('disabled-zone');
-            if(healthChips) healthChips.classList.remove('disabled-zone');
             
             if(investWrapper) investWrapper.querySelectorAll('input').forEach(el => el.disabled = false);
             if(declutterSection) declutterSection.querySelectorAll('input, select').forEach(el => el.disabled = false);
-            if(healthChips) healthChips.querySelectorAll('input').forEach(el => el.disabled = false);
             
             beautySelect.value = ""; 
         }
@@ -554,7 +558,6 @@
         fetch(GAS_URL + "?action=getMission") 
         .then(response => response.json())
         .then(data => {
-            // 更新 Cycle 顯示：Cycle X (MM/DD - MM/DD)
             let cycleText = `Cycle ${data.cycle_id || '?'}`;
             if(data.cycle_range) cycleText += ` (${data.cycle_range})`;
             document.getElementById('cycle-id').innerText = cycleText;
@@ -577,6 +580,10 @@
             console.error("無法讀取目標", err);
         });
       }
+      
+      function toggleText(el) {
+          el.classList.toggle('expanded');
+      }
 
       function applyFormConfig(questions) {
          questions.forEach(q => {
@@ -588,12 +595,17 @@
 
              if (q.options && q.options.length > 0) {
                  if (el && el.tagName === 'SELECT') {
-                     el.innerHTML = '<option value="">未執行</option>'; 
+                     // 特別處理：保留 "未執行" 選項，然後加入後端來的選項
+                     // 如果是運動選單，我們保留 Plan B
+                     var keepPlanB = (q.id === 'sport_execution');
+                     el.innerHTML = '<option value="">未執行</option>' + (keepPlanB ? '<option value="Plan B">Plan B</option>' : '');
                      q.options.forEach(opt => {
-                         var option = document.createElement("option");
-                         option.value = opt;
-                         option.innerText = opt;
-                         el.appendChild(option);
+                         if (opt !== 'Plan B') { // 避免重複
+                             var option = document.createElement("option");
+                             option.value = opt;
+                             option.innerText = opt;
+                             el.appendChild(option);
+                         }
                      });
                  } else if (q.id === 'invest_practice') {
                      var chipContainer = document.getElementById('invest-chips');
@@ -619,10 +631,14 @@
 
         let completed = 0;
         
+        // 職業
         if (document.getElementById('career_people').value && document.getElementById('career_next_focus').value) completed++;
         
-        if (!isRecording) {
-             if (document.getElementById('check_sport').checked) completed++;
+        // 健康 (修正：如果是錄影日，只看運動是否有填)
+        if (isRecording) {
+             if (document.getElementById('sport_execution').value) completed++;
+        } else {
+             if (document.getElementById('sport_execution').value) completed++;
              if (document.getElementById('check_duolingo').checked && document.getElementById('check_reading').checked) completed = Math.min(total, completed + 0.5); 
         }
         
@@ -803,71 +819,58 @@
             data.q12 = document.getElementById('j_q12').value; 
             pushToFirebaseQueue('journal', data, "盤中紀錄已紀錄", () => { closeJournalModal(type); btn.disabled = false; });
         } 
+        // 舊版 "end" 已刪除，新的整合版邏輯如下：
         else if (type === 'end') { 
-            data.date = document.getElementById('j_date_end').value;
-            data.q86 = document.getElementById('j_q86').checked; 
-            data.q87 = document.getElementById('j_q87').checked; 
-            data.q88 = document.getElementById('j_q88').checked; 
-            data.q89 = document.getElementById('j_q89').value; 
-            data.q90 = document.getElementById('j_q90').value; 
-            data.q91 = document.getElementById('j_q91').value; 
-            data.q93 = document.getElementById('j_q93').value; 
-            data.q94 = document.getElementById('j_q94').value; 
-            data.q95 = document.getElementById('j_q95').value; 
-            data.q96 = document.getElementById('j_q96').value; 
-            data.q97 = document.getElementById('j_q97').value; 
-            data.q98 = document.getElementById('j_q98').value; 
-            data.q99 = document.getElementById('j_q99').value; 
-            pushToFirebaseQueue('journal', data, "反思日記已儲存", () => { closeJournalModal(type); btn.disabled = false; });
-        }
-        else if (type === 'goal') {
+            // 1. 準備 Daily Routine 數據 (對應 Practice Report)
             var routineData = {
-              date: document.getElementById('j_date_goal').value,
+              date: document.getElementById('j_date_end').value,
               is_recording: document.getElementById('is_recording_day').checked ? "是" : "否",
               career_review: `【人】${document.getElementById('career_people').value} | 【事】${document.getElementById('career_incident').value || '無'} | 【焦點】${document.getElementById('career_next_focus').value}`,
-              health_status: `運動:${document.getElementById('check_sport').checked ? 'V' : 'X'} | 保養:${document.getElementById('beauty_routine').value}`,
+              health_status: `運動:${document.getElementById('sport_execution').value} | 保養:${document.getElementById('beauty_routine').value}`,
               wealth_evidence: document.getElementById('wealth_evidence').value,
               invest_practice: document.getElementById('invest_practice').value,
               declutter_item: `${document.getElementById('declutter_item').value} (${document.getElementById('declutter_area').value})`,
               score: updateProgress() + "%",
-              note: "", 
+              note: `${document.getElementById('j_q89').value} | 感受:${document.getElementById('j_q91').value}`, 
               streak: "Day 1"
             };
 
-            btn.innerText = "寫入中...";
-            if(GAS_URL.includes("你的_SCRIPT_ID")) {
-                alert("請先設定 GAS_URL！");
-                btn.disabled = false;
-                return;
-            }
+            // 2. 準備 Journal 數據 (對應 顯化日記)
+            var journalData = {
+                journalType: 'end',
+                date: document.getElementById('j_date_end').value,
+                q89: document.getElementById('j_q89').value, // 為了相容，重複送出
+                q91: document.getElementById('j_q91').value,
+                q93: document.getElementById('j_q93').value,
+                q94: document.getElementById('j_q94').value,
+                q95: document.getElementById('j_q95').value,
+                q96: document.getElementById('j_q96').value,
+                q97: document.getElementById('j_q97').value,
+                q98: document.getElementById('j_q98').value,
+                q99: document.getElementById('j_q99').value
+            };
 
-            fetch(GAS_URL, {
-                method: "POST",
-                mode: "no-cors", 
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(routineData)
-            })
-            .then(() => {
-                showToast("✅ 執行回報已歸檔！");
-                closeJournalModal(type); 
-                btn.disabled = false; 
-                btn.innerText = "執行回報";
-                resetGoalForm();
-            })
-            .catch(err => {
-                console.error(err);
-                showToast("❌ 連線失敗");
-                btn.disabled = false;
-                btn.innerText = "重試";
+            btn.innerText = "寫入中...";
+            
+            // 同時送出兩個請求到 Queue
+            pushToFirebaseQueue('daily_routine', routineData, null, () => {
+                pushToFirebaseQueue('journal', journalData, "一日總結已歸檔！", () => {
+                    closeJournalModal(type); 
+                    btn.disabled = false; 
+                    btn.innerText = "提交一日總結";
+                    // 清空表單
+                    document.getElementById('modal-end').querySelectorAll('input[type="text"], textarea').forEach(el => el.value = "");
+                    document.getElementById('modal-end').querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+                    document.getElementById('beauty_routine').selectedIndex = 0;
+                    document.getElementById('sport_execution').selectedIndex = 0;
+                    updateProgress();
+                });
             });
         }
       }
       
       function resetGoalForm() {
-         document.getElementById('modal-goal').querySelectorAll('input[type="text"], textarea').forEach(el => el.value = "");
-         document.getElementById('modal-goal').querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
-         document.getElementById('beauty_routine').selectedIndex = 0;
-         updateProgress();
+         // 此函式已整合進 submitJournalPart('end') 的 callback 中，保留空函式避免報錯
       }
 
       function submitStock() { 
@@ -955,8 +958,10 @@
       function closeModal() { document.getElementById('expense-modal').classList.remove('active'); }
       function openJournalModal(type) { 
           document.getElementById('modal-' + type).classList.add('active'); 
-          if(type === 'goal') { 
-              resetGoalForm();
+          // 新版只有 end 需要特別處理
+          if(type === 'end') { 
+              // 可以在這裡重置進度條
+              updateProgress();
           } 
       }
       function closeJournalModal(type) { document.getElementById('modal-' + type).classList.remove('active'); }
