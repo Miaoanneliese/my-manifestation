@@ -327,7 +327,7 @@
         <div class="operation-container">
           <div style="padding: 0 10px;">
             <button class="journal-section-btn" onclick="openJournalModal('start')"><span>一日之始</span> <span class="material-icons-round">chevron_right</span></button>
-            <button class="journal-section-btn" onclick="openJournalModal('middle')"><span>一日之中 (盤中紀錄)</span> <span class="material-icons-round">chevron_right</span></button>
+            <button class="journal-section-btn" onclick="openJournalModal('middle')"><span>一日之中</span> <span class="material-icons-round">chevron_right</span></button>
             <button class="journal-section-btn" onclick="openJournalModal('end')"><span>一日之末</span> <span class="material-icons-round">chevron_right</span></button>
           </div>
         </div>
@@ -361,7 +361,7 @@
                 <div class="routine-wrapper" style="margin-bottom: 20px;">
                     <div style="background-color: #fafafa; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
                         <div class="toggle-row" style="border-bottom: none; margin-bottom: 0;">
-                            <span style="font-weight: 600; color: var(--muji-red); font-size: 0.9rem;">今日是錄影日 (Plan B)？</span>
+                            <span style="font-weight: 600; color: var(--muji-red); font-size: 0.9rem;">今日是錄影日？</span>
                             <label class="switch">
                                 <input type="checkbox" id="is_recording_day">
                                 <span class="slider round"></span>
@@ -453,25 +453,16 @@
                         </div>
                     </div>
 
-                   <div class="routine-section">
-    <div class="routine-header">顯化日記</div>
-
-    <div class="input-group"><label>感謝一切,我在...</label><input type="text" id="j_q93"></div>
-    <div class="input-group"><label>之前...</label><input type="text" id="j_q94"></div>
-    <div class="input-group"><label>我感覺...</label><input type="text" id="j_q95"></div>
-    <div class="input-group"><label>並且我...</label><input type="text" id="j_q96"></div>
-    <div class="input-group"><label>最後我想...(感謝)</label><input type="text" id="j_q97"></div>
-    
-    <div class="input-group">
-        <label>完成目標的我今天會做什麼</label>
-        <input type="text" id="j_q98" placeholder="...">
-    </div>
-    
-    <div class="input-group">
-        <label>明日期望/待辦</label>
-        <input type="text" id="j_q99" placeholder="...">
-    </div>
-</div>
+                    <div class="routine-section">
+                        <div class="routine-header">顯化日記</div>
+                        <div class="input-group"><label>感謝一切,我在...</label><input type="text" id="j_q93"></div>
+                        <div class="input-group"><label>之前...</label><input type="text" id="j_q94"></div>
+                        <div class="input-group"><label>我感覺...</label><input type="text" id="j_q95"></div>
+                        <div class="input-group"><label>並且我...</label><input type="text" id="j_q96"></div>
+                        <div class="input-group"><label>最後我想...(感謝)</label><input type="text" id="j_q97"></div>
+                        <div class="input-group"><label>完成目標的我今天會做什麼</label><input type="text" id="j_q98"></div>
+                        <div class="input-group"><label>明日期望/待辦</label><input type="text" id="j_q99"></div>
+                    </div>
                 </div>
                 <button type="submit" class="btn-muji">提交一日總結</button>
             </form>
@@ -1006,4 +997,3 @@
     </script>
 </body>
 </html>
-
