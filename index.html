@@ -619,8 +619,10 @@
 
       function autoSelectRoutine() {
         const isRecording = document.getElementById('is_recording_day').checked;
+        const beautySelect = document.getElementById('beauty_routine');
         const investWrapper = document.getElementById('wrapper-invest');
         const declutterSection = document.getElementById('section-declutter');
+        const sportSelect = document.getElementById('sport_execution');
         const habitSection = document.getElementById('section-habit');
         
         if (isRecording) {
@@ -633,14 +635,14 @@
             if(declutterSection) declutterSection.querySelectorAll('input, select').forEach(el => el.disabled = true);
             if(habitSection) habitSection.querySelectorAll('input').forEach(el => el.disabled = true);
 
-            // [New] 自動清空並提示手動補充 (不預設 Plan B)
-            var sportInput = document.getElementById('sport_execution');
-            var beautyInput = document.getElementById('beauty_routine');
+            // [New] 不再自動填入 Plan B
+            // 我們只清空，等待手動輸入
+            // 注意：這裡只改 placeholder 提示，不強制清空 value，以免誤刪使用者已輸入的資料
+            // 若您希望每次切換都清空，可以加上 sportSelect.value = "";
             
-            sportInput.placeholder = "手動補充...";
-            beautyInput.placeholder = "手動補充...";
+            // 讓使用者知道現在是手動模式
+            // 可以選擇清空目前已選的 chip (視需求而定，這裡保留原狀)
 
-            showToast("錄影日：已鎖定簡化模式");
         } else {
             // 恢復
             if(investWrapper) investWrapper.classList.remove('disabled-zone');
@@ -650,12 +652,6 @@
             if(investWrapper) investWrapper.querySelectorAll('input').forEach(el => el.disabled = false);
             if(declutterSection) declutterSection.querySelectorAll('input, select').forEach(el => el.disabled = false);
             if(habitSection) habitSection.querySelectorAll('input').forEach(el => el.disabled = false);
-            
-            // 恢復原本的 placeholder
-            var sportInput = document.getElementById('sport_execution');
-            var beautyInput = document.getElementById('beauty_routine');
-            sportInput.placeholder = "手動補充...";
-            beautyInput.placeholder = "手動補充...";
         }
         updateProgress();
       }
@@ -1023,9 +1019,18 @@
                     btn.innerText = "提交一日總結";
                     // 清空表單
                     document.getElementById('modal-end').querySelectorAll('input[type="text"], textarea').forEach(el => el.value = "");
+                    
+                    // [修正] 強制清空手動補充欄位
+                    document.getElementById('sport_execution').value = "";
+                    document.getElementById('beauty_routine').value = "";
+                    
                     document.getElementById('modal-end').querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
                     document.getElementById('beauty_routine').selectedIndex = 0;
                     document.getElementById('sport_execution').selectedIndex = 0;
+                    
+                    // 清空所有 chips 的選擇狀態
+                    document.querySelectorAll('.muji-chip input').forEach(el => el.checked = false);
+                    
                     updateProgress();
                 });
             });
