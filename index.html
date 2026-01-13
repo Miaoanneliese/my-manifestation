@@ -54,9 +54,11 @@
       .muji-title { font-family: 'Noto Serif TC', serif; font-size: 1.4rem; margin: 10px 0 20px; text-align: center; color: var(--muji-red); }
       .big-number { font-size: 1.6rem; font-weight: 300; font-family: 'Noto Serif TC', serif; color: #333; }
       
+      /* [修正] 強制 6:4 比例設定，加入 min-width:0 防止被長字串撐開 */
       .dashboard-grid { display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch; }
-      .schedule-card { flex: 3; margin-bottom: 0; }
-      .right-col { flex: 2; display: flex; flex-direction: column; gap: 10px; }
+      .schedule-card { flex: 3; margin-bottom: 0; min-width: 0; }
+      .right-col { flex: 2; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
       .goal-card, .quote-card { flex: 1; margin-bottom: 0; }
       .goal-text-read { font-family: 'Noto Serif TC', serif; color: var(--text-main); font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; flex: 1; overflow-y: auto; scrollbar-width: thin; max-height: 100px; }
       .quote-text { font-family: 'Noto Serif TC', serif; font-size: 0.85rem; line-height: 1.6; color: var(--accent-brown); flex: 1; display: flex; align-items: center; }
@@ -100,8 +102,26 @@
 
       .calendar-list, .journal-list { list-style: none; padding: 0; margin: 0; flex: 1; }
       .calendar-list li { padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; width: 100%; overflow: hidden; }
-      .cal-date { margin-right: 5px; font-weight: 600; color: var(--accent-brown); flex-shrink: 0; }
-      .cal-title-wrapper { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; color: #555; }
+      
+      /* [修正] 行事曆文字樣式：支援點擊展開 */
+      .cal-date { margin-right: 5px; font-weight: 600; color: var(--accent-brown); flex-shrink: 0; margin-top: 2px; }
+      
+      .cal-title-wrapper { 
+          flex: 1; 
+          overflow: hidden; 
+          text-overflow: ellipsis; 
+          white-space: nowrap; 
+          display: block; 
+          color: #555; 
+          cursor: pointer; 
+          transition: color 0.2s;
+      }
+      .cal-title-wrapper:active { color: #000; }
+      .cal-title-wrapper.expanded {
+          white-space: normal;
+          overflow: visible;
+          word-break: break-all;
+      }
       
       .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #ddd; border-radius: 4px; }
       .table-wrapper.scrollable { max-height: 300px; } .table-wrapper.auto-height { max-height: none; overflow-y: visible; height: 100%; }
@@ -840,7 +860,8 @@
                         var bs = evt.color ? `border-left: ${isT?'6px':'4px'} solid ${evt.color}; padding-left: 8px;` : '';
                         li.style.padding = "8px 0 8px 5px";
                         if(isT) li.style.backgroundColor = "#fafafa";
-                        li.innerHTML = `<div style="display:flex; align-items:center; width:100%; ${bs}"><span class="cal-date" style="min-width: 60px; color:${dc}; font-weight:${w};">${dt}</span><span class="cal-title-wrapper" style="color:${c}; font-weight:${w};">${evt.title}</span></div>`;
+                        // [修正] align-items:flex-start 讓多行時日期維持在左上角，並加入 onclick 觸發展開
+                        li.innerHTML = `<div style="display:flex; align-items:flex-start; width:100%; ${bs}"><span class="cal-date" style="min-width: 60px; color:${dc}; font-weight:${w}; margin-top:2px;">${dt}</span><span class="cal-title-wrapper" onclick="toggleText(this)" style="color:${c}; font-weight:${w}; cursor:pointer;">${evt.title}</span></div>`;
                         calList.appendChild(li);
                     });
                     if(data.calendarEvents.length > max) {
