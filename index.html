@@ -405,7 +405,6 @@
                                 <span class="slider round"></span>
                             </label>
                         </div>
-                        <div style="font-size: 0.75rem; color: #999; margin-top: 5px;">*開啟後，運動與保養將進入簡化模式。</div>
                     </div>
 
                     <!-- NEW: Habit Section -->
@@ -634,16 +633,16 @@
             if(declutterSection) declutterSection.querySelectorAll('input, select').forEach(el => el.disabled = true);
             if(habitSection) habitSection.querySelectorAll('input').forEach(el => el.disabled = true);
 
-            // [New] 自動填入 Plan B
+            // [New] 自動清空並提示手動補充 (不預設 Plan B)
             var sportInput = document.getElementById('sport_execution');
             var beautyInput = document.getElementById('beauty_routine');
             
-            if(sportInput.value.indexOf('Plan B') === -1) {
-                 sportInput.value = sportInput.value ? sportInput.value + ", Plan B" : "Plan B";
-            }
-            if(beautyInput.value.indexOf('Plan B') === -1) {
-                 beautyInput.value = beautyInput.value ? beautyInput.value + ", Plan B" : "Plan B";
-            }
+            // 清空目前的輸入值 (如果是空的或尚未手動輸入過)
+            // 這裡我們只更新 placeholder，保留使用者可能已經輸入的內容，除非您希望強制清空
+            // 根據需求「不要預設」，這裡不修改 value
+            
+            sportInput.placeholder = "手動補充...";
+            beautyInput.placeholder = "手動補充...";
 
             showToast("錄影日：已鎖定簡化模式");
         } else {
@@ -655,6 +654,12 @@
             if(investWrapper) investWrapper.querySelectorAll('input').forEach(el => el.disabled = false);
             if(declutterSection) declutterSection.querySelectorAll('input, select').forEach(el => el.disabled = false);
             if(habitSection) habitSection.querySelectorAll('input').forEach(el => el.disabled = false);
+            
+            // 恢復原本的 placeholder
+            var sportInput = document.getElementById('sport_execution');
+            var beautyInput = document.getElementById('beauty_routine');
+            sportInput.placeholder = "手動補充...";
+            beautyInput.placeholder = "手動補充...";
         }
         updateProgress();
       }
