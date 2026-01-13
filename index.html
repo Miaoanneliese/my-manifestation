@@ -54,7 +54,7 @@
       .muji-title { font-family: 'Noto Serif TC', serif; font-size: 1.4rem; margin: 10px 0 20px; text-align: center; color: var(--muji-red); }
       .big-number { font-size: 1.6rem; font-weight: 300; font-family: 'Noto Serif TC', serif; color: #333; }
       
-      /* [修正] 強制 6:4 比例設定，加入 min-width:0 防止被長字串撐開 */
+      /* 強制 6:4 比例設定，加入 min-width:0 防止被長字串撐開 */
       .dashboard-grid { display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch; }
       .schedule-card { flex: 3; margin-bottom: 0; min-width: 0; }
       .right-col { flex: 2; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
@@ -103,7 +103,7 @@
       .calendar-list, .journal-list { list-style: none; padding: 0; margin: 0; flex: 1; }
       .calendar-list li { padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; width: 100%; overflow: hidden; }
       
-      /* [修正] 行事曆文字樣式：支援點擊展開 */
+      /* 行事曆文字樣式：支援點擊展開 */
       .cal-date { margin-right: 5px; font-weight: 600; color: var(--accent-brown); flex-shrink: 0; margin-top: 2px; }
       
       .cal-title-wrapper { 
@@ -399,7 +399,7 @@
                 <div class="routine-wrapper" style="margin-bottom: 20px;">
                     <div style="background-color: #fafafa; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
                         <div class="toggle-row" style="border-bottom: none; margin-bottom: 0;">
-                            <span style="font-weight: 600; color: var(--muji-red); font-size: 0.9rem;">今日是錄影日？</span>
+                            <span style="font-weight: 600; color: var(--muji-red); font-size: 0.9rem;">今日是錄影日/假日？</span>
                             <label class="switch">
                                 <input type="checkbox" id="is_recording_day">
                                 <span class="slider round"></span>
@@ -491,19 +491,13 @@
                         </div>
                         <div class="input-group">
                             <label id="lbl_sport_execution">運動執行</label>
-                            <select id="sport_execution" class="mini-select">
-                                <option value="">未執行</option>
-                                <option value="Plan B">Plan B</option>
-                                </select>
+                            <div class="chip-group" id="sport-chips" style="margin-bottom: 8px;"></div>
+                            <input type="text" id="sport_execution" placeholder="手動補充...">
                         </div>
                         <div class="input-group">
                             <label id="lbl_beauty_routine">美容保養</label>
-                            <select id="beauty_routine" class="mini-select">
-                                <option value="">未執行</option>
-                                <option value="Booster Pro">Booster Pro</option>
-                                <option value="Hair/Foot">洗髮泡腳</option>
-                                <option value="Plan B">基礎清潔</option>
-                            </select>
+                            <div class="chip-group" id="beauty-chips" style="margin-bottom: 8px;"></div>
+                            <input type="text" id="beauty_routine" placeholder="手動補充...">
                         </div>
                     </div>
 
@@ -626,10 +620,8 @@
 
       function autoSelectRoutine() {
         const isRecording = document.getElementById('is_recording_day').checked;
-        const beautySelect = document.getElementById('beauty_routine');
         const investWrapper = document.getElementById('wrapper-invest');
         const declutterSection = document.getElementById('section-declutter');
-        const sportSelect = document.getElementById('sport_execution');
         const habitSection = document.getElementById('section-habit');
         
         if (isRecording) {
@@ -642,7 +634,17 @@
             if(declutterSection) declutterSection.querySelectorAll('input, select').forEach(el => el.disabled = true);
             if(habitSection) habitSection.querySelectorAll('input').forEach(el => el.disabled = true);
 
-            beautySelect.value = 'Plan B';
+            // [New] 自動填入 Plan B
+            var sportInput = document.getElementById('sport_execution');
+            var beautyInput = document.getElementById('beauty_routine');
+            
+            if(sportInput.value.indexOf('Plan B') === -1) {
+                 sportInput.value = sportInput.value ? sportInput.value + ", Plan B" : "Plan B";
+            }
+            if(beautyInput.value.indexOf('Plan B') === -1) {
+                 beautyInput.value = beautyInput.value ? beautyInput.value + ", Plan B" : "Plan B";
+            }
+
             showToast("錄影日：已鎖定簡化模式");
         } else {
             // 恢復
@@ -653,8 +655,6 @@
             if(investWrapper) investWrapper.querySelectorAll('input').forEach(el => el.disabled = false);
             if(declutterSection) declutterSection.querySelectorAll('input, select').forEach(el => el.disabled = false);
             if(habitSection) habitSection.querySelectorAll('input').forEach(el => el.disabled = false);
-            
-            beautySelect.value = ""; 
         }
         updateProgress();
       }
@@ -707,6 +707,19 @@
           el.classList.toggle('expanded');
       }
 
+      function updateChipInput(checkbox, inputId) {
+        const input = document.getElementById(inputId);
+        let currentVals = input.value ? input.value.split(', ') : [];
+        const val = checkbox.value;
+        if (checkbox.checked) {
+            if (!currentVals.includes(val)) currentVals.push(val);
+        } else {
+            currentVals = currentVals.filter(v => v !== val);
+        }
+        input.value = currentVals.join(', ');
+        updateProgress();
+      }
+
       function applyFormConfig(questions) {
          questions.forEach(q => {
              var el = document.getElementById(q.id);
@@ -729,15 +742,24 @@
                              el.appendChild(option);
                          }
                      });
-                 } else if (q.id === 'invest_practice') {
-                     var chipContainer = document.getElementById('invest-chips');
-                     chipContainer.innerHTML = '';
-                     q.options.forEach(opt => {
-                         var label = document.createElement("label");
-                         label.className = "muji-chip";
-                         label.innerHTML = `<input type="checkbox" onchange="updateInvestInput(this)" value="${opt}"><span>${opt}</span>`;
-                         chipContainer.appendChild(label);
-                     });
+                 } else if (['invest_practice', 'sport_execution', 'beauty_routine'].includes(q.id)) {
+                     // [New] 通用 Chip 處理 (投資、運動、保養)
+                     var containerId = "";
+                     if(q.id === 'invest_practice') containerId = 'invest-chips';
+                     if(q.id === 'sport_execution') containerId = 'sport-chips';
+                     if(q.id === 'beauty_routine') containerId = 'beauty-chips';
+                     
+                     var chipContainer = document.getElementById(containerId);
+                     if(chipContainer) {
+                         chipContainer.innerHTML = '';
+                         q.options.forEach(opt => {
+                             // [修正] 完全依照後端資料產生，不額外加 Plan B
+                             var label = document.createElement("label");
+                             label.className = "muji-chip";
+                             label.innerHTML = `<input type="checkbox" onchange="updateChipInput(this, '${q.id}')" value="${opt}"><span>${opt}</span>`;
+                             chipContainer.appendChild(label);
+                         });
+                     }
                  }
              }
          });
@@ -791,16 +813,9 @@
         return percent;
       }
       
+      // 保留舊函式名稱以防萬一，但轉導向新函式
       function updateInvestInput(checkbox) {
-        const input = document.getElementById('invest_practice');
-        let currentVals = input.value ? input.value.split(', ') : [];
-        if (checkbox.checked) {
-            if (!currentVals.includes(checkbox.value)) currentVals.push(checkbox.value);
-        } else {
-            currentVals = currentVals.filter(v => v !== checkbox.value);
-        }
-        input.value = currentVals.join(', ');
-        updateProgress();
+          updateChipInput(checkbox, 'invest_practice');
       }
 
       function setupDashboardListener() {
@@ -972,7 +987,13 @@
             };
 
             // 2. 準備 Journal 數據 (對應 顯化日記)
-            // 修改重點：j_q86, j_q87, j_q88, j_q90 改為傳送布林值 (true/false)
+            // [修正] 將 career_next_focus 合併到 q99 (明日期望)，以便在隔天首頁顯示
+            var q99Val = document.getElementById('j_q99').value;
+            var nextFocus = document.getElementById('career_next_focus').value;
+            if(nextFocus) {
+                 q99Val = (q99Val ? q99Val + " ｜ " : "") + nextFocus;
+            }
+
             var journalData = {
                 journalType: 'end',
                 date: document.getElementById('j_date_end').value,
@@ -988,7 +1009,7 @@
                 q96: document.getElementById('j_q96').value,
                 q97: document.getElementById('j_q97').value,
                 q98: document.getElementById('j_q98').value,
-                q99: document.getElementById('j_q99').value
+                q99: q99Val // 使用合併後的值
             };
 
             btn.innerText = "寫入中...";
