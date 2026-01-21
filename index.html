@@ -8,74 +8,37 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-      /* --- Muji 風格色系 --- */
       :root { 
-          --bg-color: #F9F9F6; 
-          --card-bg: #FFFFFF; 
-          --text-main: #4a4a4a; 
-          --text-sub: #999999; 
-          --border-color: #EBEBEB;    
-          --muji-red: #8a1c1c; 
-          --muji-green: #6c8c6e; 
-          --accent-brown: #8D8170; 
-          --tag-bg: #E6E4E0;
-          --btn-green: #597e5d; 
-          --table-header-bg: #f4f4f0; 
+          --bg-color: #F9F9F6; --card-bg: #FFFFFF; --text-main: #4a4a4a; --text-sub: #999999; 
+          --border-color: #EBEBEB; --muji-red: #8a1c1c; --muji-green: #6c8c6e; --accent-brown: #8D8170; 
+          --tag-bg: #E6E4E0; --btn-green: #597e5d; --table-header-bg: #f4f4f0; 
       }
-      
       * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-      
-      /* 優化：防止頁面彈性拉動 (Overscroll) 產生的瀏覽器介面干擾，模擬 App 質感 */
-      body { 
-          margin: 0; 
-          font-family: 'Noto Sans TC', sans-serif; 
-          background-color: var(--bg-color); 
-          color: var(--text-main); 
-          padding-bottom: 80px; 
-          letter-spacing: 0.03em;
-          overscroll-behavior-y: none;
-          user-select: none; /* 防止長按選取文字 */
-          -webkit-user-select: none;
-      }
-      /* 允許輸入框選取文字 */
+      body { margin: 0; font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; letter-spacing: 0.03em; overscroll-behavior-y: none; user-select: none; -webkit-user-select: none; }
       input, textarea { user-select: text; -webkit-user-select: text; }
-
       header { background-color: var(--bg-color); padding: 25px 20px 10px; }
-      
       .date-weather-box { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--text-main); padding-bottom: 10px; }
       .current-date { font-family: 'Noto Serif TC', serif; font-size: 1.5rem; font-weight: 900; color: #333; }
       .day-tag { font-size: 0.9rem; margin-left: 5px; color: var(--text-sub); }
       .weather-info { display: flex; align-items: center; font-size: 0.9rem; color: var(--text-sub); gap: 5px; }
-      
       main { padding: 20px; }
-      
       .muji-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 3px; padding: 15px 20px; margin-bottom: 15px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; }
       .card-label { font-size: 0.7rem; color: var(--text-sub); margin-bottom: 10px; letter-spacing: 1.5px; font-weight: 500; text-transform: uppercase; }
       .muji-title { font-family: 'Noto Serif TC', serif; font-size: 1.4rem; margin: 10px 0 20px; text-align: center; color: var(--muji-red); }
       .big-number { font-size: 1.6rem; font-weight: 300; font-family: 'Noto Serif TC', serif; color: #333; }
-      
-      /* 強制 6:4 比例設定，加入 min-width:0 防止被長字串撐開 */
       .dashboard-grid { display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch; }
       .schedule-card { flex: 3; margin-bottom: 0; min-width: 0; }
       .right-col { flex: 2; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-
       .goal-card, .quote-card { flex: 1; margin-bottom: 0; }
       .goal-text-read { font-family: 'Noto Serif TC', serif; color: var(--text-main); font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; flex: 1; overflow-y: auto; scrollbar-width: thin; max-height: 100px; }
       .quote-text { font-family: 'Noto Serif TC', serif; font-size: 0.85rem; line-height: 1.6; color: var(--accent-brown); flex: 1; display: flex; align-items: center; }
-
       .dashboard-main-grid { display: grid; grid-template-columns: 1fr 55px 1fr 55px; gap: 10px; align-items: stretch; }
       .dashboard-main-grid > * { min-width: 0; } 
       .dashboard-main-grid .muji-card, .dashboard-main-grid .action-btn-container { margin-bottom: 0; height: 100%; }
       .grid-left-block { grid-column: 1 / 3; } .grid-right-block { grid-column: 3 / 5; } .grid-full-width { grid-column: 1 / 5; }
       .grid-c1 { grid-column: 1; } .grid-c2 { grid-column: 2; } .grid-c3 { grid-column: 3; } .grid-c4 { grid-column: 4; }
-      
       .left-stack-wrapper { display: flex; flex-direction: column; gap: 10px; height: 100%; }
       .left-stack-wrapper .muji-card:last-child { flex: 1; }
-      
-      .goal-text-read::-webkit-scrollbar { width: 4px; } .goal-text-read::-webkit-scrollbar-thumb { background-color: #eee; border-radius: 4px; }
-      .routine-wrapper { flex: 1; overflow-y: visible; min-height: 0; padding-right: 2px; display: flex; flex-direction: column; gap: 10px; }
-      .routine-wrapper .muji-card { margin-bottom: 0; border: none; box-shadow: none; padding: 0; }
-
       .expense-display { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
       .action-btn-container { width: 55px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); text-decoration: none; background: #fff; border: 1px solid var(--border-color); transition: all 0.2s; }
       .action-btn-container:active { transform: scale(0.95); background: #f5f5f5; }
@@ -83,46 +46,20 @@
       .link-btn { background: var(--btn-green); color: white; border-color: var(--btn-green); }
       .btn-icon span { font-size: 26px; margin-bottom: 2px; }
       .btn-text { font-size: 0.75rem; letter-spacing: 1px; writing-mode: vertical-rl; text-orientation: upright; }
-      
       .gratitude-compact { display: flex; flex-direction: row; gap: 8px; align-items: center; margin-top: auto; padding-top: 8px; border-top: 1px solid #f0f0f0; }
       .input-underline { flex: 1; border: none; border-bottom: 1px solid #ddd; background: transparent; padding: 4px 0; font-size: 0.9rem; border-radius: 0; outline: none; transition: border-color 0.3s; }
       .input-underline:focus { border-bottom-color: var(--accent-brown); }
       .btn-mini-muji { padding: 6px 14px; background: #fff; border: 1px solid #d0d0d0; color: #777; font-size: 0.8rem; border-radius: 2px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; font-weight: 500; letter-spacing: 1px; }
       .btn-mini-muji:active, .btn-mini-muji:hover { background: #fafafa; border-color: var(--accent-brown); color: var(--accent-brown); }
-      
       #mini-gratitude-list { list-style: none; padding: 0; margin: 0 0 8px 0; display: flex; flex-direction: column; overflow: hidden; }
       #mini-gratitude-list li { font-size: 0.85rem; color: #666; padding: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.6; display: flex; align-items: center; }
       #mini-gratitude-list li .date { color: var(--accent-brown); font-size: 0.75rem; margin-right: 8px; font-family: 'Noto Sans TC', sans-serif; min-width: 40px; letter-spacing: 0.5px; font-weight: 500; }
-
-      .routine-section { border-bottom: 1px dashed #eee; padding-bottom: 15px; margin-bottom: 15px; transition: opacity 0.3s; }
-      .routine-section:last-child { border-bottom: none; margin-bottom: 0; }
-      .routine-header { font-size: 0.8rem; font-weight: 600; color: var(--accent-brown); margin-bottom: 10px; letter-spacing: 1px; text-transform: uppercase; }
-      .disabled-zone { opacity: 0.3; pointer-events: none; filter: grayscale(100%); background-color: #f0f0f0; } 
-      .goal-label { color: var(--muji-red); font-weight: bold; margin-right: 5px; }
-
       .calendar-list, .journal-list { list-style: none; padding: 0; margin: 0; flex: 1; }
       .calendar-list li { padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; width: 100%; overflow: hidden; }
-      
-      /* 行事曆文字樣式：支援點擊展開 */
       .cal-date { margin-right: 5px; font-weight: 600; color: var(--accent-brown); flex-shrink: 0; margin-top: 2px; }
-      
-      .cal-title-wrapper { 
-          flex: 1; 
-          overflow: hidden; 
-          text-overflow: ellipsis; 
-          white-space: nowrap; 
-          display: block; 
-          color: #555; 
-          cursor: pointer; 
-          transition: color 0.2s;
-      }
+      .cal-title-wrapper { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; color: #555; cursor: pointer; transition: color 0.2s; }
       .cal-title-wrapper:active { color: #000; }
-      .cal-title-wrapper.expanded {
-          white-space: normal;
-          overflow: visible;
-          word-break: break-all;
-      }
-      
+      .cal-title-wrapper.expanded { white-space: normal; overflow: visible; word-break: break-all; }
       .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #ddd; border-radius: 4px; }
       .table-wrapper.scrollable { max-height: 300px; } .table-wrapper.auto-height { max-height: none; overflow-y: visible; height: 100%; }
       .muji-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; white-space: nowrap; }
@@ -139,8 +76,6 @@
       .text-pos { color: var(--muji-red) !important; font-weight: bold; } .text-neg { color: var(--muji-green) !important; font-weight: bold; } 
       .journal-list li { padding: 12px 0; border-bottom: 1px dashed #eee; font-size: 0.9rem; line-height: 1.6; color: var(--text-main); }
       .journal-list li:last-child { border-bottom: none; }
-      .journal-meta { font-size: 0.85rem; color: var(--accent-brown); font-weight: 600; font-family: 'Noto Serif TC', serif; margin-right: 5px; display: inline; }
-
       .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
       .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
       .modal-content { background: white; width: 90%; max-width: 500px; padding: 25px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
@@ -164,47 +99,30 @@
       .muji-chip input:checked + span { background: var(--text-main); color: white; border-color: var(--text-main); }
       .btn-muji { width: 100%; padding: 15px; background: #333; color: white; border: none; font-size: 1rem; cursor: pointer; margin-top: 15px; border-radius: 2px; letter-spacing: 1px; transition: background 0.2s; }
       .btn-muji:active { background-color: #000; }
-      .btn-muji:disabled { background-color: #ccc; }
-      
       .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: 1fr 1fr 1fr; height: 56px; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
       .nav-btn { background: none; border: none; color: #bbb; height: 100%; padding: 0; cursor: pointer; display: flex; justify-content: center; align-items: center; }
       .nav-btn.active { color: #444; }
       .nav-btn .material-icons-round { font-size: 28px; }
-      
       .tab-content { display: none; } .tab-content.active { display: block; animation: fadeIn 0.3s; }
       .mode-select-container { display: flex; flex-direction: column; gap: 10px; padding: 20px; justify-content: center; height: 50vh; }
       .mode-btn { padding: 15px; font-size: 1rem; border: 1px solid #ddd; background: #fff; border-radius: 4px; color: #555; text-align: center; cursor: pointer; display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 10px; }
-      .mode-btn:active { background: #f0f0f0; }
       .operation-container { padding-bottom: 70px; max-width: 600px; margin: 0 auto; }
       .hidden { display: none !important; }
       .mini-select { font-size: 0.85rem; padding: 5px; height: 32px; }
       .tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-      .tech-item label { font-size: 0.75rem; margin-bottom: 2px; display: block; }
       .journal-section-btn { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 15px; margin-top: 15px; background: #fff; border: 1px solid #ddd; border-radius: 4px; text-align: left; color: #555; font-size: 1rem; cursor: pointer; }
-      .journal-section-btn:active { background: #f9f9f9; }
-      .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #eee; }
       #toast { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 0.9rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 3000; white-space: nowrap; }
       @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
-
       .goal-header-group { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px 8px; border-bottom: 1px solid #f0f0f0; }
       .cycle-badge { background-color: var(--muji-red); color: white; font-size: 0.75rem; padding: 2px 10px; border-radius: 12px; font-weight: 500; letter-spacing: 0.5px; }
-      
       .macro-goal-container { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; background-color: #fff; }
-      
       .macro-row { display: flex; align-items: baseline; margin-bottom: 10px; width: 100%; }
       .macro-row:last-child { margin-bottom: 0; }
-      .split-container { display: flex; width: 100%; gap: 15px; margin-bottom: 10px; }
-      .split-block { flex: 1; display: flex; align-items: baseline; min-width: 0; } 
-      
       .macro-label { font-size: 0.7rem; color: #555; background-color: var(--tag-bg); padding: 2px 6px; border-radius: 2px; margin-right: 8px; flex-shrink: 0; font-weight: 500; }
       .macro-text { font-size: 0.85rem; color: var(--text-main); line-height: 1.4; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: color 0.2s; }
-      .macro-text:active { color: #888; }
       .macro-text.expanded { white-space: normal; overflow: visible; word-break: break-all; }
-      .date-suffix { font-size: 0.75rem; color: #aaa; margin-left: 6px; letter-spacing: 0; }
-
       .cycle-list-container { flex: 1; overflow-y: auto; padding: 8px 15px 12px; }
       .cycle-list-item { padding: 8px 0; border-bottom: 1px dashed #eee; display: flex; align-items: flex-start; }
-      .cycle-list-item:last-child { border-bottom: none; }
       .cycle-cat { color: var(--muji-red); font-weight: 600; margin-right: 8px; white-space: nowrap; font-size: 0.8rem; margin-top: 1px; min-width: 32px; }
       .cycle-desc { color: #555; font-size: 0.85rem; line-height: 1.5; }
     </style>
@@ -261,7 +179,6 @@
         </div>
       </div>
       <div id="tab-dashboard" class="tab-content active">
-
         <div class="dashboard-grid">
             <div class="muji-card schedule-card">
                 <div class="card-label">本週行程</div>
@@ -315,7 +232,6 @@
                              <span id="cycle-rate" class="cycle-badge" style="background:var(--accent-brown); margin-left:5px;">0%</span>
                          </div>
                     </div>
-    
                     <div class="macro-goal-container">
                         <div class="macro-row" style="display: flex; gap: 10px;">
                             <div style="flex: 1; display: flex; align-items: baseline; min-width: 0;">
@@ -327,14 +243,12 @@
                                 <span id="goal-season" class="macro-text" onclick="toggleText(this)">...</span>
                             </div>
                         </div>
-                        
                         <div class="macro-row" style="margin-top: 8px;">
                             <span class="macro-label">周</span>
                             <span id="cycle-range-display" class="date-suffix" style="margin-right: 8px; color: #999; font-size: 0.75rem; font-weight: 500;"></span>
                             <span id="goal-weekly" class="macro-text" onclick="toggleText(this)">...</span>
                         </div>
                     </div>
-    
                     <div class="cycle-list-container">
                         <div class="cycle-list-item"><span class="cycle-cat">職業</span> <span id="goal-career" class="cycle-desc">...</span></div>
                         <div class="cycle-list-item"><span class="cycle-cat">健康</span> <span id="goal-health" class="cycle-desc">...</span></div>
@@ -344,12 +258,10 @@
                     </div>
                 </div>
             </div>
-            
             <div class="muji-card grid-right-block">
                 <div class="card-label">損益試算表</div>
                 <div class="table-wrapper auto-height"><table id="table-profit" class="muji-table"></table></div>
             </div>
-
             <div class="muji-card grid-full-width">
                 <div class="card-label">顯化冥想</div>
                 <ul class="journal-list" id="list-manifestation"><li style="color:#ccc; text-align:center;">讀取中...</li></ul>
@@ -378,4 +290,325 @@
     </nav>
     <div id="expense-modal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>新增收支</h3><span class="material-icons-round close-btn" onclick="closeModal()">close</span></div><form id="modal-form"><div class="input-group"><label>金額</label><input type="number" id="amount" required placeholder="0" inputmode="decimal" style="font-size: 1.5rem; text-align: center;"></div><div class="input-group"><label>消費方式</label><div class="chip-group"><label class="muji-chip"><input type="radio" name="paymentMethod" value="現金" checked><span>現金</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="悠遊卡"><span>悠遊卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="台新Gogoro"><span>台新Gogoro</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="富邦J卡"><span>富邦J卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="中信卡"><span>中信卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="玉山卡"><span>玉山卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="新光卡"><span>新光卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="兆豐卡"><span>兆豐卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="串暫欠"><span>串暫欠</span></label></div></div><div class="input-group" style="display:flex; justify-content:space-between; align-items:center;"><label style="margin:0;">消費拆分?</label><label class="switch"><input type="checkbox" id="isSplit" onchange="toggleSplitOptions()"><span class="slider round"></span></label></div><div id="split-section" style="display:none; background:#fafafa; padding:10px; border:1px solid #eee; margin-bottom:15px;"><div class="input-group"><label>拆分方式</label><select id="splitMethod" onchange="toggleSplitInputs()"><option value="一人一半">一人一半</option><option value="潘全額">潘全額</option><option value="潘部分">潘部分</option><option value="他人">他人</option></select></div><div id="input-pan-part" class="input-group" style="display:none;"><label>潘 部份金額</label><input type="number" id="panAmount"></div><div id="input-others" class="input-group" style="display:none;"><label>他人 金額</label><input type="number" id="othersAmount"></div><div id="input-chuan-pay" class="input-group" style="display:none;"><label>串 支付 (選填)</label><input type="number" id="chuanPay" placeholder="0"></div></div><div class="input-group" style="display:flex; align-items:center; gap:10px;"><input type="checkbox" id="isTobacco" style="width:auto;"><label for="isTobacco" style="margin:0;">是否含菸</label></div><div class="input-group"><label>備註</label><input type="text" id="note"></div><button type="button" class="btn-muji" onclick="submitModalExpense()">確認儲存</button></form></div></div>
     <div id="modal-start" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>一日之始</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('start')">close</span></div><form onsubmit="submitJournalPart('start'); return false;"><div class="input-group"><label>日期</label><input type="date" id="j_date_start" required></div><div class="input-group"><label>今日目標</label><input type="text" id="j_q3"></div><div class="input-group"><label>是否能靜心看盤</label><select id="j_q4"><option value="是">是</option><option value="否">否</option></select></div><button type="submit" class="btn-muji">儲存</button></form></div></div>
-    <div id="modal-middle" class="modal-overlay"><div class="modal-content" style="max-height:85vh; overflow-y:auto;"><div class="modal-header"><h3>一日之中</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('middle')">close</span></div><form onsubmit="submitJournalPart('middle'); return false;"><div class="input-group"><label>日期</label><input type="date" id="j_date_middle" required></div><div class="input-group"><label>是否進行交易</label><select id="j_q5"><option value="否">否</option><option value="買進">買進</option><option value="賣出">賣出</option><option value="當沖">當沖</option></select></div><hr style="border:0; border-top:1px dashed #eee; margin:15px 0;"><h4 style="margin:0 0 10px; color:#666;">帳戶紀錄</h4><div class="flex-row"><div class="flex-col input-group"><label>帳面金額</label><input type="number" id="j_q6"></div><div class="flex-col input-group"><label>成本</label><input type="number" id="j_q7"></div></div><div class="flex-row"><div class="flex-col input-group"><label>淨
+    <div id="modal-middle" class="modal-overlay"><div class="modal-content" style="max-height:85vh; overflow-y:auto;"><div class="modal-header"><h3>一日之中</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('middle')">close</span></div><form onsubmit="submitJournalPart('middle'); return false;"><div class="input-group"><label>日期</label><input type="date" id="j_date_middle" required></div><div class="input-group"><label>是否進行交易</label><select id="j_q5"><option value="否">否</option><option value="買進">買進</option><option value="賣出">賣出</option><option value="當沖">當沖</option></select></div><hr style="border:0; border-top:1px dashed #eee; margin:15px 0;"><h4 style="margin:0 0 10px; color:#666;">帳戶紀錄</h4><div class="flex-row"><div class="flex-col input-group"><label>帳面金額</label><input type="number" id="j_q6"></div><div class="flex-col input-group"><label>成本</label><input type="number" id="j_q7"></div></div><div class="flex-row"><div class="flex-col input-group"><label>淨值</label><input type="number" id="j_q6_net" disabled style="background:#eee;"></div></div><hr style="border:0; border-top:1px dashed #eee; margin:15px 0;"><h4 style="margin:0 0 10px; color:#666;">檢討</h4><div class="input-group"><label>檢討 (人|事|焦點)</label><textarea id="j_career_review" rows="3" placeholder="【人】... 【事】..."></textarea></div><button type="submit" class="btn-muji">儲存</button></form></div></div>
+    <div id="modal-end" class="modal-overlay"><div class="modal-content" style="max-height:85vh; overflow-y:auto;"><div class="modal-header"><h3>一日之末</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('end')">close</span></div><form onsubmit="submitJournalPart('end'); return false;"><div class="input-group"><label>日期</label><input type="date" id="j_date_end" required onchange="refreshMissionContext(this.value)"></div><div class="input-group" style="display:flex; justify-content:space-between; align-items:center;"><label>是否為錄影日</label><label class="switch"><input type="checkbox" id="j_is_recording"><span class="slider round"></span></label></div><div class="input-group"><label>每日習慣</label><div class="chip-group"><label class="muji-chip"><input type="checkbox" id="j_q86"> <span id="lbl_habit_1">習慣1</span></label><label class="muji-chip"><input type="checkbox" id="j_q87"> <span id="lbl_habit_2">習慣2</span></label><label class="muji-chip"><input type="checkbox" id="j_q88"> <span id="lbl_habit_3">習慣3</span></label><label class="muji-chip"><input type="checkbox" id="j_q90"> <span id="lbl_habit_4">習慣4</span></label></div></div><div class="input-group"><label>健康狀態 (運動|保養)</label><input type="text" id="j_health_status" placeholder="運動: ... | 保養: ..."></div><div class="input-group"><label>斷捨離物品</label><input type="text" id="j_declutter_item" placeholder="物品名稱 (處理方式)"></div><div class="input-group"><label>今日感受 (事件|感受)</label><textarea id="j_note" rows="2" placeholder="事件... | 感受..."></textarea></div><div class="input-group"><label>顯化 (感謝|之前|感覺)</label><textarea id="j_manifestation" rows="2" placeholder="感謝... | ...之前 | 我感覺..."></textarea></div><div class="input-group"><label>今日評分 (0-100)</label><input type="number" id="j_score" max="100"></div><button type="submit" class="btn-muji">儲存</button></form></div></div>
+    <div id="toast"></div>
+
+    <script>
+        var FIREBASE_URL = "https://manifestation-fc95b-default-rtdb.asia-southeast1.firebasedatabase.app/"; 
+        var FIREBASE_SECRET = "k6qAKfvcw2eqPcluPZO5JUyIcwLp6j31AM8jYNWo"; 
+        var missionData = null;
+
+        window.onload = function() {
+            var today = new Date();
+            var dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            document.getElementById('header-date').innerText = (today.getMonth()+1) + "." + today.getDate();
+            document.getElementById('header-day').innerText = dayNames[today.getDay()];
+            initDateInputs();
+            loadDashboard();
+            updateReasonOptions();
+        };
+
+        function getLocalISOString() {
+            const d = new Date();
+            const offset = d.getTimezoneOffset() * 60000;
+            return new Date(d.getTime() - offset).toISOString().split('T')[0];
+        }
+
+        function initDateInputs() {
+            var todayStr = getLocalISOString();
+            document.querySelectorAll('input[type="date"]').forEach(el => el.value = todayStr);
+        }
+
+        function loadDashboard() {
+            google.script.run.withSuccessHandler(renderDashboard).doGet({action: 'getMission'});
+        }
+
+        function refreshMissionContext(dateStr) {
+            showToast("正在載入該日期的目標...");
+            google.script.run.withSuccessHandler(function(data){
+                missionData = data;
+                updateHabitLabels(data.habit_names);
+                showToast("已更新為 " + dateStr + " 的目標");
+            }).doGet({action: 'getMission', date: dateStr});
+        }
+
+        function renderDashboard(data) {
+            missionData = data;
+            document.getElementById('weather-display').innerHTML = '<span class="material-icons-round">cloud</span> <span>Taipei</span>'; 
+            
+            // Goals
+            document.getElementById('goal-year').innerText = data.year_goal || "未設定";
+            document.getElementById('goal-season').innerText = data.season_goal || "未設定";
+            document.getElementById('goal-weekly').innerText = data.cycle_goal || "未設定";
+            document.getElementById('cycle-range-display').innerText = data.cycle_range || "";
+            document.getElementById('cycle-id').innerText = "Cycle " + (data.cycle_id || "?");
+            document.getElementById('cycle-rate').innerText = data.completion_rate;
+            
+            document.getElementById('goal-career').innerText = data.career;
+            document.getElementById('goal-health').innerText = data.health;
+            document.getElementById('goal-wealth').innerText = data.wealth;
+            document.getElementById('goal-skills').innerText = data.skills;
+            document.getElementById('goal-life').innerText = data.life;
+
+            document.getElementById('goal-display').innerText = data.goalText || "今日未設定目標";
+            document.getElementById('daily-quote').innerText = data.quote;
+            document.getElementById('today-expense').innerText = data.todayExpense.toLocaleString();
+            document.getElementById('month-expense').innerText = data.monthExpense.toLocaleString();
+
+            updateHabitLabels(data.habit_names);
+            renderLists(data);
+            renderTables(data);
+        }
+
+        function updateHabitLabels(names) {
+            if(names && names.length >= 4) {
+                document.getElementById('lbl_habit_1').innerText = names[0];
+                document.getElementById('lbl_habit_2').innerText = names[1];
+                document.getElementById('lbl_habit_3').innerText = names[2];
+                document.getElementById('lbl_habit_4').innerText = names[3];
+            }
+        }
+
+        function renderLists(data) {
+            // Calendar
+            var cList = document.getElementById('calendar-list');
+            cList.innerHTML = "";
+            if (data.calendarEvents && data.calendarEvents.length > 0) {
+                data.calendarEvents.forEach(evt => {
+                    var li = document.createElement('li');
+                    li.innerHTML = `<span class="cal-date">${evt.date}</span><span class="cal-title-wrapper" style="color:${evt.color}" onclick="this.classList.toggle('expanded')">${evt.title}</span>`;
+                    cList.appendChild(li);
+                });
+            } else { cList.innerHTML = "<li style='color:#ccc; justify-content:center;'>無行程</li>"; }
+
+            // Gratitude Widget
+            var gList = document.getElementById('mini-gratitude-list');
+            gList.innerHTML = "";
+            if (data.gratitudeList && data.gratitudeList.length > 0) {
+                data.gratitudeList.forEach(item => {
+                    var li = document.createElement('li');
+                    li.innerHTML = `<span class="date">${item.date.split('/')[1]}/${item.date.split('/')[2]}</span><span>${item.content}</span>`;
+                    gList.appendChild(li);
+                });
+            } else { gList.innerHTML = "<li>無紀錄</li>"; }
+            
+            // Manifestation
+            var mList = document.getElementById('list-manifestation');
+            mList.innerHTML = "";
+            if (data.manifestationList && data.manifestationList.length > 0) {
+                data.manifestationList.forEach(item => {
+                   var li = document.createElement('li');
+                   li.innerHTML = `<div class="journal-meta">${item.date}</div><div style="margin-top:2px;">${item.content}</div>`;
+                   mList.appendChild(li);
+                });
+            } else { mList.innerHTML = "<li style='color:#ccc; text-align:center;'>尚無顯化紀錄</li>"; }
+        }
+
+        function renderTables(data) {
+            // Profit Table
+            var pTable = document.getElementById('table-profit');
+            pTable.innerHTML = "";
+            if (data.profitData && data.profitData.length > 0) {
+                data.profitData.forEach((row, rIdx) => {
+                    var tr = document.createElement('tr');
+                    row.forEach((cell, cIdx) => {
+                        var td = document.createElement(rIdx < 2 ? 'td' : 'td'); 
+                        td.innerText = cell;
+                        if (cIdx > 0 && rIdx > 1) {
+                            td.className = "text-right";
+                            if (cell.indexOf('-') > -1) td.classList.add('text-neg');
+                            else if (cell !== "0" && cell !== "") td.classList.add('text-pos');
+                        }
+                        tr.appendChild(td);
+                    });
+                    pTable.appendChild(tr);
+                });
+            }
+            
+            // Invest Calc
+            var iTable = document.getElementById('table-invest-calc');
+            iTable.innerHTML = "";
+            if (data.investCalcData && data.investCalcData.length > 0) {
+                 data.investCalcData.forEach((row, rIdx) => {
+                     var tr = document.createElement('tr');
+                     row.forEach((cell, cIdx) => {
+                         var el = (rIdx === 0) ? 'th' : 'td';
+                         var td = document.createElement(el);
+                         td.innerText = cell;
+                         if (cIdx > 0 && rIdx > 0) td.className = "text-right";
+                         tr.appendChild(td);
+                     });
+                     iTable.appendChild(tr);
+                 });
+            }
+        }
+
+        function triggerManualSync() {
+            showToast("正在同步資料...");
+            google.script.run.withSuccessHandler(function() {
+                showToast("同步請求已發送");
+                setTimeout(loadDashboard, 2000);
+            }).handleManualSync({range: {getSheet: function(){return {getName: function(){return "損益試算"}}}, getA1Notation: function(){return "A27"}, getValue: function(){return true}, setValue: function(){}}}); 
+        }
+
+        function submitJournalPart(part) {
+            var payload = { type: 'journal', date: document.getElementById('j_date_'+part).value };
+            if (part === 'start') {
+                payload.q3 = document.getElementById('j_q3').value;
+                payload.q4 = document.getElementById('j_q4').value;
+            } else if (part === 'middle') {
+                payload.q5 = document.getElementById('j_q5').value;
+                payload.q6 = document.getElementById('j_q6').value;
+                payload.q7 = document.getElementById('j_q7').value;
+                payload.career_review = document.getElementById('j_career_review').value;
+            } else if (part === 'end') {
+                payload.is_recording = document.getElementById('j_is_recording').checked ? "是" : "否";
+                payload.q86 = document.getElementById('j_q86').checked ? "TRUE" : "FALSE";
+                payload.q87 = document.getElementById('j_q87').checked ? "TRUE" : "FALSE";
+                payload.q88 = document.getElementById('j_q88').checked ? "TRUE" : "FALSE";
+                payload.q90 = document.getElementById('j_q90').checked ? "TRUE" : "FALSE";
+                payload.health_status = document.getElementById('j_health_status').value;
+                payload.declutter_item = document.getElementById('j_declutter_item').value;
+                payload.note = document.getElementById('j_note').value;
+                var mani = document.getElementById('j_manifestation').value; 
+                if(mani) {
+                     var parts = mani.split('|');
+                     if(parts[0]) payload.q93 = parts[0].replace('感謝', '').trim();
+                     if(parts[1]) payload.q94 = parts[1].replace('之前', '').trim();
+                     if(parts[2]) payload.q95 = parts[2].replace('我感覺', '').trim();
+                }
+                payload.score = document.getElementById('j_score').value;
+            }
+            sendToQueue(payload, part);
+        }
+        
+        function submitGratitude() {
+            var txt = document.getElementById('journal-text').value;
+            if(!txt) return;
+            sendToQueue({ type: 'goal', text: txt }, 'gratitude');
+            document.getElementById('journal-text').value = "";
+        }
+
+        function sendToQueue(data, modalId) {
+            showToast("正在儲存...");
+            fetch(FIREBASE_URL + "request_queue.json?auth=" + FIREBASE_SECRET, {
+                method: 'POST', body: JSON.stringify(data)
+            }).then(() => {
+                showToast("儲存成功");
+                if (modalId && modalId !== 'gratitude') closeJournalModal(modalId);
+                setTimeout(loadDashboard, 1500);
+            }).catch(e => showToast("儲存失敗: " + e));
+        }
+
+        // --- UI Interactions ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            if(tabId==='tab-operation') document.getElementById('nav-operation').classList.add('active');
+            if(tabId==='tab-dashboard') document.getElementById('nav-dashboard').classList.add('active');
+            if(tabId==='tab-journal') document.getElementById('nav-journal').classList.add('active');
+        }
+        function openModal() { document.getElementById('expense-modal').classList.add('active'); }
+        function closeModal() { document.getElementById('expense-modal').classList.remove('active'); }
+        function openJournalModal(type) { document.getElementById('modal-'+type).classList.add('active'); }
+        function closeJournalModal(type) { document.getElementById('modal-'+type).classList.remove('active'); }
+        function showToast(msg) { var t = document.getElementById('toast'); t.innerText = msg; t.style.opacity = 1; setTimeout(() => t.style.opacity = 0, 3000); }
+        function selectMode(mode) { document.getElementById('op-selection').classList.add('hidden'); document.getElementById('form-'+mode).classList.remove('hidden'); }
+        function backToSelection() { document.querySelectorAll('.operation-container').forEach(el => el.classList.add('hidden')); document.getElementById('op-selection').classList.remove('hidden'); }
+        function toggleText(el) { el.classList.toggle('expanded'); }
+        function updateReasonOptions() {
+             var action = document.getElementById('s_action').value;
+             var s = document.getElementById('s_reason');
+             var label = document.getElementById('reasonLabel');
+             s.innerHTML = "";
+             if (action === "進場") {
+                 label.style.color = "#d35400";
+                 ["突破", "回檔", "支撐確認", "抄底"].forEach(o => s.add(new Option(o, o)));
+             } else {
+                 label.style.color = "#27ae60";
+                 ["停利", "停損", "換股", "避險"].forEach(o => s.add(new Option(o, o)));
+             }
+        }
+        function updateDayTradeReason() {
+            var trend = document.getElementById('d_trend').value;
+            var s = document.getElementById('d_reason');
+            s.innerHTML = "";
+            if (trend === "多") ["強勢股", "創高", "支撐有守"].forEach(o => s.add(new Option(o, o)));
+            else ["弱勢股", "破底", "壓力不過"].forEach(o => s.add(new Option(o, o)));
+        }
+        function toggleSplitOptions() {
+            var isSplit = document.getElementById('isSplit').checked;
+            document.getElementById('split-section').style.display = isSplit ? 'block' : 'none';
+        }
+        function toggleSplitInputs() {
+            var method = document.getElementById('splitMethod').value;
+            document.getElementById('input-pan-part').style.display = (method === '潘部分') ? 'block' : 'none';
+            document.getElementById('input-others').style.display = (method === '他人') ? 'block' : 'none';
+            document.getElementById('input-chuan-pay').style.display = 'block';
+        }
+        function submitModalExpense() {
+             var amt = document.getElementById('amount').value;
+             if (!amt) return;
+             var data = {
+                 type: 'expense',
+                 amount: amt,
+                 paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').value,
+                 isSplit: document.getElementById('isSplit').checked ? "是" : "否",
+                 splitMethod: document.getElementById('splitMethod').value,
+                 panAmount: document.getElementById('panAmount').value,
+                 othersAmount: document.getElementById('othersAmount').value,
+                 chuanPay: document.getElementById('chuanPay').value,
+                 isTobacco: document.getElementById('isTobacco').checked ? "是" : "否",
+                 note: document.getElementById('note').value
+             };
+             sendToQueue(data, 'expense-modal');
+        }
+        function submitStock() {
+            var d = {
+                type: 'stock',
+                date: document.getElementById('s_date').value,
+                code: document.getElementById('s_code').value,
+                name: document.getElementById('s_name').value,
+                shares: document.getElementById('s_shares').value,
+                price: document.getElementById('s_price').value,
+                settlement: document.getElementById('s_settlement').value,
+                trend: document.getElementById('s_trend').value,
+                action: document.getElementById('s_action').value,
+                reason: document.getElementById('s_reason').value,
+                weekTrend: document.getElementById('s_weekTrend').value,
+                dayTrend: document.getElementById('s_dayTrend').value,
+                position: document.getElementById('s_position').value,
+                volume: document.getElementById('s_volume').value,
+                ma20t: document.getElementById('s_ma20t').value,
+                maArrangement: document.getElementById('s_maArrangement').value,
+                kd: document.getElementById('s_kd').value,
+                macd: document.getElementById('s_macd').value,
+                pressure: document.getElementById('s_pressure').value,
+                support: document.getElementById('s_support').value
+            };
+            sendToQueue(d);
+            showToast("波段紀錄已送出");
+            backToSelection();
+        }
+        function submitDayTrade() {
+            var d = {
+                type: 'daytrade',
+                date: document.getElementById('d_date').value,
+                code: document.getElementById('d_code').value,
+                name: document.getElementById('d_name').value,
+                trend: document.getElementById('d_trend').value,
+                reason: document.getElementById('d_reason').value,
+                shares: document.getElementById('d_shares').value,
+                entryPrice: document.getElementById('d_entryPrice').value,
+                exitPrice: document.getElementById('d_exitPrice').value,
+                exitReason: document.getElementById('d_exitReason').value
+            };
+            sendToQueue(d);
+            showToast("當沖紀錄已送出");
+            backToSelection();
+        }
+    </script>
+</body>
+</html>
