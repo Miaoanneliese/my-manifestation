@@ -376,7 +376,7 @@
       <button onclick="switchTab('tab-dashboard')" class="nav-btn active" id="nav-dashboard"><span class="material-icons-round">home</span></button>
       <button onclick="switchTab('tab-journal')" class="nav-btn" id="nav-journal"><span class="material-icons-round">auto_stories</span></button>
     </nav>
-    <div id="expense-modal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>新增收支</h3><span class="material-icons-round close-btn" onclick="closeModal()">close</span></div><form id="modal-form"><div class="input-group"><label>金額</label><input type="number" id="amount" required placeholder="0" inputmode="decimal" style="font-size: 1.5rem; text-align: center;"></div><div class="input-group"><label>消費方式</label><div class="chip-group"><label class="muji-chip"><input type="radio" name="paymentMethod" value="現金" checked><span>現金</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="悠遊卡"><span>悠遊卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="台新Gogoro"><span>台新Gogoro</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="富邦J卡"><span>富邦J卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="中信卡"><span>中信卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="玉山卡"><span>玉山卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="新光卡"><span>新光卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="兆豐卡"><span>兆豐卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="串暫欠"><span>串暫欠</span></label></div></div><div class="input-group" style="display:flex; justify-content:space-between; align-items:center;"><label style="margin:0;">消費拆分?</label><label class="switch"><input type="checkbox" id="isSplit" onchange="toggleSplitOptions()"><span class="slider round"></span></label></div><div id="split-section" style="display:none; background:#fafafa; padding:10px; border:1px solid #eee; margin-bottom:15px;"><div class="input-group"><label>拆分方式</label><select id="splitMethod" onchange="toggleSplitInputs()"><option value="一人一半">一人一半</option><option value="潘全額">潘全額</option><option value="潘部分">潘部分</option><option value="他人">他人</option></select></div><div id="input-pan-part" class="input-group" style="display:none;"><label>潘 部份金額</label><input type="number" id="panAmount"></div><div id="input-others" class="input-group" style="display:none;"><label>他人 金額</label><input type="number" id="othersAmount"></div><div id="input-chuan-pay" class="input-group" style="display:none;"><label>串 支付 (選填)</label><input type="number" id="chuanPay" placeholder="0"></div></div><div class="input-group" style="display:flex; align-items:center; gap:10px;"><input type="checkbox" id="isTobacco" style="width:auto;"><label for="isTobacco" style="margin:0;">是否含菸</label></div><div class="input-group"><label>備註</label><input type="text" id="note"></div><button type="button" class="btn-muji" onclick="submitModalExpense()">確認儲存</button></form></div></div>
+    <div id="expense-modal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>新增收支</h3><span class="material-icons-round close-btn" onclick="closeModal()">close</span></div><form id="modal-form"><div class="input-group"><label>金額</label><input type="number" id="amount" required placeholder="0" inputmode="decimal" style="font-size: 1.5rem; text-align: center;"></div><div class="input-group"><label>消費方式</label><div class="chip-group"><label class="muji-chip"><input type="radio" name="paymentMethod" value="現金" checked><span>現金</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="悠遊卡"><span>悠遊卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="台新Gogoro"><span>台新Gogoro</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="富邦J卡"><span>富邦J卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="中信卡"><span>中信卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="玉山卡"><span>玉山卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="新光卡"><span>新光卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="兆豐卡"><span>兆豐卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="串暫欠"><span>串暫欠</span></label></div></div><div class="input-group" style="display:flex; justify-content:space-between; align-items:center;"><label style="margin:0;">消費拆分?</label><label class="switch"><input type="checkbox" id="isSplit" onchange="toggleSplitOptions()"><span class="slider round"></span></label></div><div id="split-section" style="display:none; background:#fafafa; padding:10px; border:1px solid #eee; margin-bottom:15px;"><div class="input-group"><label>拆分方式</label><select id="splitMethod" onchange="toggleSplitInputs()"><option value="一人一半">一人一半</option><option value="潘全額">潘全額</option><option value="潘部分">潘部分</option><option value="他人">他人</option></select></div><div id="input-pan-part" class="input-group" style="display:none;"><label>潘 部份金額</label><input type="number" id="panAmount"></div><div id="input-others" class="input-group" style="display:none;"><label>他人 金額</label><input type="number" id="othersAmount"></div><div id="input-chuan-pay" class="input-group" style="display:none;"><label>串 支付 (選填)</label><input type="number" id="chuanPay" placeholder="0"></div></div><div class="input-group" style="display:flex; align-items:center; gap:10px;"><input type="checkbox" id="isTobacco" style="width:auto;"><label for="isTobacco" style="margin:0;">是否含菸</label></div><div class="input-group"><label>備註</label><div class="chip-group" style="margin-bottom: 8px;"><button type="button" class="btn-mini-muji" onclick="appendNote('生存底線')">生存底線</button><button type="button" class="btn-mini-muji" onclick="appendNote('飲食耗材')">飲食耗材</button><button type="button" class="btn-mini-muji" onclick="appendNote('保養折舊')">保養折舊</button><button type="button" class="btn-mini-muji" onclick="appendNote('能量體驗')">能量體驗</button><button type="button" class="btn-mini-muji" onclick="appendNote('垃圾消費')">垃圾消費</button></div><input type="text" id="note" placeholder="手動輸入或點擊上方標籤..."></div><button type="button" class="btn-muji" onclick="submitModalExpense()">確認儲存</button></form></div></div>
     <div id="modal-start" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>一日之始</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('start')">close</span></div><form onsubmit="submitJournalPart('start'); return false;"><div class="input-group"><label>日期</label><input type="date" id="j_date_start" required></div><div class="input-group"><label>今日目標</label><input type="text" id="j_q3"></div><div class="input-group"><label>是否能靜心看盤</label><select id="j_q4"><option value="是">是</option><option value="否">否</option></select></div><button type="submit" class="btn-muji">儲存</button></form></div></div>
     <div id="modal-middle" class="modal-overlay"><div class="modal-content" style="max-height:85vh; overflow-y:auto;"><div class="modal-header"><h3>一日之中</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('middle')">close</span></div><form onsubmit="submitJournalPart('middle'); return false;"><div class="input-group"><label>日期</label><input type="date" id="j_date_middle" required></div><div class="input-group"><label>是否進行交易</label><select id="j_q5"><option value="否">否</option><option value="買進">買進</option><option value="賣出">賣出</option><option value="當沖">當沖</option></select></div><hr style="border:0; border-top:1px dashed #eee; margin:15px 0;"><h4 style="margin:0 0 10px; color:#666;">帳戶紀錄</h4><div class="flex-row"><div class="flex-col input-group"><label>帳面金額</label><input type="number" id="j_q6"></div><div class="flex-col input-group"><label>成本</label><input type="number" id="j_q7"></div></div><div class="flex-row"><div class="flex-col input-group"><label>淨利%</label><input type="number" id="j_q8" step="0.01"></div><div class="flex-col input-group"><label>銀行餘額</label><input type="number" id="j_q9"></div></div><hr style="border:0; border-top:1px dashed #eee; margin:15px 0;"><h4 style="margin:0 0 10px; color:#666;">大盤紀錄</h4><div class="input-group"><label>今日大事件</label><input type="text" id="j_q10"></div><div class="flex-row"><div class="flex-col input-group"><label>大盤指數</label><input type="number" id="j_q11" step="0.01"></div><div class="flex-col input-group"><label>漲跌%</label><input type="number" id="j_q12" step="0.01"></div></div><button type="submit" class="btn-muji">儲存</button></form></div></div>
     
@@ -544,7 +544,6 @@
       const db = firebase.database();
       
       // === 核心修正：時區處理函式 ===
-      // 強制回傳當地時間的 YYYY-MM-DD 格式，解決凌晨時段 new Date().toISOString() 回傳前一天的問題
       function getLocalISOString() {
           const now = new Date();
           const year = now.getFullYear();
@@ -577,7 +576,6 @@
         
         fetchCurrentMission();
 
-        // 使用新函式設定預設日期，避免時區錯誤
         setLocalToday('s_date');
         setLocalToday('d_date');
         setLocalToday('j_date_start');
@@ -596,12 +594,10 @@
             autoSelectRoutine();
         });
         
-        // 額外提示功能：若在普通瀏覽器分頁開啟，提示加入主畫面
         if (!window.navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
              console.log("建議加入主畫面以獲得最佳全螢幕體驗");
         }
         
-        // 禁止長按右鍵選單 (App 質感)
         document.addEventListener('contextmenu', event => event.preventDefault());
       };
 
@@ -627,7 +623,6 @@
         const habitSection = document.getElementById('section-habit');
         
         if (isRecording) {
-            // 錄影日：鎖定投資與斷捨離，但運動保留
             if(investWrapper) investWrapper.classList.add('disabled-zone');
             if(declutterSection) declutterSection.classList.add('disabled-zone');
             if(habitSection) habitSection.classList.add('disabled-zone');
@@ -636,16 +631,7 @@
             if(declutterSection) declutterSection.querySelectorAll('input, select').forEach(el => el.disabled = true);
             if(habitSection) habitSection.querySelectorAll('input').forEach(el => el.disabled = true);
 
-            // [New] 不再自動填入 Plan B
-            // 我們只清空，等待手動輸入
-            // 注意：這裡只改 placeholder 提示，不強制清空 value，以免誤刪使用者已輸入的資料
-            // 若您希望每次切換都清空，可以加上 sportSelect.value = "";
-            
-            // 讓使用者知道現在是手動模式
-            // 可以選擇清空目前已選的 chip (視需求而定，這裡保留原狀)
-
         } else {
-            // 恢復
             if(investWrapper) investWrapper.classList.remove('disabled-zone');
             if(declutterSection) declutterSection.classList.remove('disabled-zone');
             if(habitSection) habitSection.classList.remove('disabled-zone');
@@ -679,7 +665,6 @@
             document.getElementById('goal-skills').innerText = data.skills || '-';
             document.getElementById('goal-life').innerText = data.life || '-';
             
-            // 更新習慣清單名稱
             if (data.habit_names && data.habit_names.length >= 4) {
                 if(document.getElementById('lbl_habit_1')) document.getElementById('lbl_habit_1').innerText = data.habit_names[0];
                 if(document.getElementById('lbl_habit_2')) document.getElementById('lbl_habit_2').innerText = data.habit_names[1];
@@ -687,7 +672,6 @@
                 if(document.getElementById('lbl_habit_4')) document.getElementById('lbl_habit_4').innerText = data.habit_names[3];
             }
             
-            // 更新達成率
             if(document.getElementById('cycle-rate')) {
                 document.getElementById('cycle-rate').innerText = data.completion_rate || "0%";
             }
@@ -728,12 +712,10 @@
 
              if (q.options && q.options.length > 0) {
                  if (el && el.tagName === 'SELECT') {
-                     // 特別處理：保留 "未執行" 選項，然後加入後端來的選項
-                     // 如果是運動選單，我們保留 Plan B
                      var keepPlanB = (q.id === 'sport_execution');
                      el.innerHTML = '<option value="">未執行</option>' + (keepPlanB ? '<option value="Plan B">Plan B</option>' : '');
                      q.options.forEach(opt => {
-                         if (opt !== 'Plan B') { // 避免重複
+                         if (opt !== 'Plan B') {
                              var option = document.createElement("option");
                              option.value = opt;
                              option.innerText = opt;
@@ -741,7 +723,6 @@
                          }
                      });
                  } else if (['invest_practice', 'sport_execution', 'beauty_routine'].includes(q.id)) {
-                     // [New] 通用 Chip 處理 (投資、運動、保養)
                      var containerId = "";
                      if(q.id === 'invest_practice') containerId = 'invest-chips';
                      if(q.id === 'sport_execution') containerId = 'sport-chips';
@@ -751,7 +732,6 @@
                      if(chipContainer) {
                          chipContainer.innerHTML = '';
                          q.options.forEach(opt => {
-                             // [修正] 完全依照後端資料產生，不額外加 Plan B
                              var label = document.createElement("label");
                              label.className = "muji-chip";
                              label.innerHTML = `<input type="checkbox" onchange="updateChipInput(this, '${q.id}')" value="${opt}"><span>${opt}</span>`;
@@ -765,40 +745,30 @@
 
       function updateProgress() {
         const isRecording = document.getElementById('is_recording_day').checked;
-        let total = 10; // 基礎 6 + 習慣 4 = 10
+        let total = 10; 
         
         if (isRecording) {
-            total = 4; // 錄影日：只算 職業、運動、保養、財富 (排除投資、斷捨離、習慣)
+            total = 4; 
         }
 
         let completed = 0;
         
-        // 1. 職業 (Career)
         if (document.getElementById('career_people').value && document.getElementById('career_next_focus').value) completed++;
         
-        // 2. 健康 (Health)
         if (isRecording) {
              if (document.getElementById('sport_execution').value) completed++;
         } else {
              if (document.getElementById('sport_execution').value) completed++;
-             // 技能 (Skills) - 0.5分
              if (document.getElementById('check_duolingo').checked && document.getElementById('check_reading').checked) completed += 0.5; 
         }
         
-        // 3. 美容 (Beauty)
         if (document.getElementById('beauty_routine').value) completed++;
-        
-        // 4. 財富 (Wealth)
         if (document.getElementById('wealth_evidence').value) completed++;
         
-        // 非錄影日額外項目
         if (!isRecording) {
-            // 5. 投資
             if (document.getElementById('invest_practice').value) completed++;
-            // 6. 斷捨離
             if (document.getElementById('declutter_item').value) completed++;
             
-            // 7. 習慣 1~4
             if (document.getElementById('j_q86').checked) completed++;
             if (document.getElementById('j_q87').checked) completed++;
             if (document.getElementById('j_q88').checked) completed++;
@@ -811,7 +781,6 @@
         return percent;
       }
       
-      // 保留舊函式名稱以防萬一，但轉導向新函式
       function updateInvestInput(checkbox) {
           updateChipInput(checkbox, 'invest_practice');
       }
@@ -873,7 +842,6 @@
                         var bs = evt.color ? `border-left: ${isT?'6px':'4px'} solid ${evt.color}; padding-left: 8px;` : '';
                         li.style.padding = "8px 0 8px 5px";
                         if(isT) li.style.backgroundColor = "#fafafa";
-                        // [修正] align-items:flex-start 讓多行時日期維持在左上角，並加入 onclick 觸發展開
                         li.innerHTML = `<div style="display:flex; align-items:flex-start; width:100%; ${bs}"><span class="cal-date" style="min-width: 60px; color:${dc}; font-weight:${w}; margin-top:2px;">${dt}</span><span class="cal-title-wrapper" onclick="toggleText(this)" style="color:${c}; font-weight:${w}; cursor:pointer;">${evt.title}</span></div>`;
                         calList.appendChild(li);
                     });
@@ -913,7 +881,6 @@
       }
       function pushToFirebaseQueue(taskType, taskData, successMsg, callback) {
           showToast("處理中...");
-          // 修正：使用當地完整時間戳記，確保後端寫入試算表時是正確的台灣時間
           db.ref('request_queue').push({ type: taskType, timestamp: getLocalFullTimestamp(), ...taskData }).then(() => { showToast(successMsg || "已紀錄"); if (callback) callback(); }).catch(error => alert("寫入失敗: " + error.message));
       }
       
@@ -937,11 +904,19 @@
         pushToFirebaseQueue('expense', formData, "已記帳", () => { closeModal(); document.getElementById('modal-form').reset(); btn.disabled = false; let current = parseFloat(document.getElementById('today-expense').innerText.replace(/,/g,'')) || 0; document.getElementById('today-expense').innerText = (current + (parseFloat(formData.amount)||0)).toLocaleString(); });
       }
 
+      function appendNote(text) {
+          var noteInput = document.getElementById('note');
+          if (noteInput.value) {
+              noteInput.value += ' ' + text;
+          } else {
+              noteInput.value = text;
+          }
+      }
+
       function submitGratitude() { 
         var btn = event.target; 
         btn.disabled = true; 
         var content = document.getElementById('journal-text').value; 
-        // 修正：使用當地時間，避免凌晨跨日時變成前一天
         var today = getLocalISOString();
         pushToFirebaseQueue('journal', { journalType: 'gratitude', content: content, date: today }, "已保存", () => { document.getElementById('journal-text').value = ""; btn.disabled = false; }); 
       }
@@ -970,7 +945,6 @@
             pushToFirebaseQueue('journal', data, "盤中紀錄已紀錄", () => { closeJournalModal(type); btn.disabled = false; });
         } 
         else if (type === 'end') { 
-            // 1. 準備 Daily Routine 數據 (對應 Practice Report)
             var routineData = {
               date: document.getElementById('j_date_end').value,
               is_recording: document.getElementById('is_recording_day').checked ? "是" : "否",
@@ -984,8 +958,6 @@
               streak: "Day 1"
             };
 
-            // 2. 準備 Journal 數據 (對應 顯化日記)
-            // [修正] 將 career_next_focus 合併到 q99 (明日期望)，以便在隔天首頁顯示
             var q99Val = document.getElementById('j_q99').value;
             var nextFocus = document.getElementById('career_next_focus').value;
             if(nextFocus) {
@@ -999,7 +971,7 @@
                 q87: document.getElementById('j_q87').checked,
                 q88: document.getElementById('j_q88').checked,
                 q89: document.getElementById('j_q89').value, 
-                q90: document.getElementById('j_q90').checked, // 確保它是布林值
+                q90: document.getElementById('j_q90').checked,
                 q91: document.getElementById('j_q91').value,
                 q93: document.getElementById('j_q93').value,
                 q94: document.getElementById('j_q94').value,
@@ -1007,21 +979,18 @@
                 q96: document.getElementById('j_q96').value,
                 q97: document.getElementById('j_q97').value,
                 q98: document.getElementById('j_q98').value,
-                q99: q99Val // 使用合併後的值
+                q99: q99Val 
             };
 
             btn.innerText = "寫入中...";
             
-            // 同時送出兩個請求到 Queue
             pushToFirebaseQueue('daily_routine', routineData, null, () => {
                 pushToFirebaseQueue('journal', journalData, "一日總結已歸檔！", () => {
                     closeJournalModal(type); 
                     btn.disabled = false; 
                     btn.innerText = "提交一日總結";
-                    // 清空表單
                     document.getElementById('modal-end').querySelectorAll('input[type="text"], textarea').forEach(el => el.value = "");
                     
-                    // [修正] 強制清空手動補充欄位
                     document.getElementById('sport_execution').value = "";
                     document.getElementById('beauty_routine').value = "";
                     
@@ -1029,7 +998,6 @@
                     document.getElementById('beauty_routine').selectedIndex = 0;
                     document.getElementById('sport_execution').selectedIndex = 0;
                     
-                    // 清空所有 chips 的選擇狀態
                     document.querySelectorAll('.muji-chip input').forEach(el => el.checked = false);
                     
                     updateProgress();
@@ -1039,7 +1007,6 @@
       }
       
       function resetGoalForm() {
-         // 此函式已整合進 submitJournalPart('end') 的 callback 中，保留空函式避免報錯
       }
 
       function submitStock() { 
@@ -1127,9 +1094,7 @@
       function closeModal() { document.getElementById('expense-modal').classList.remove('active'); }
       function openJournalModal(type) { 
           document.getElementById('modal-' + type).classList.add('active'); 
-          // 新版只有 end 需要特別處理
           if(type === 'end') { 
-              // 可以在這裡重置進度條
               updateProgress();
           } 
       }
