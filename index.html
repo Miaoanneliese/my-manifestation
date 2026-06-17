@@ -25,7 +25,6 @@
       
       * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
       
-      /* 優化：防止頁面彈性拉動 (Overscroll) 產生的瀏覽器介面干擾，模擬 App 質感 */
       body { 
           margin: 0; 
           font-family: 'Noto Sans TC', sans-serif; 
@@ -34,10 +33,9 @@
           padding-bottom: 80px; 
           letter-spacing: 0.03em;
           overscroll-behavior-y: none;
-          user-select: none; /* 防止長按選取文字 */
+          user-select: none;
           -webkit-user-select: none;
       }
-      /* 允許輸入框選取文字 */
       input, textarea { user-select: text; -webkit-user-select: text; }
 
       header { background-color: var(--bg-color); padding: 25px 20px 10px; }
@@ -54,7 +52,6 @@
       .muji-title { font-family: 'Noto Serif TC', serif; font-size: 1.4rem; margin: 10px 0 20px; text-align: center; color: var(--muji-red); }
       .big-number { font-size: 1.6rem; font-weight: 300; font-family: 'Noto Serif TC', serif; color: #333; }
       
-      /* 強制 6:4 比例設定，加入 min-width:0 防止被長字串撐開 */
       .dashboard-grid { display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch; }
       .schedule-card { flex: 3; margin-bottom: 0; min-width: 0; }
       .right-col { flex: 2; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
@@ -68,9 +65,6 @@
       .dashboard-main-grid .muji-card, .dashboard-main-grid .action-btn-container { margin-bottom: 0; height: 100%; }
       .grid-left-block { grid-column: 1 / 3; } .grid-right-block { grid-column: 3 / 5; } .grid-full-width { grid-column: 1 / 5; }
       .grid-c1 { grid-column: 1; } .grid-c2 { grid-column: 2; } .grid-c3 { grid-column: 3; } .grid-c4 { grid-column: 4; }
-      
-      .left-stack-wrapper { display: flex; flex-direction: column; gap: 10px; height: 100%; }
-      .left-stack-wrapper .muji-card:last-child { flex: 1; }
       
       .goal-text-read::-webkit-scrollbar { width: 4px; } .goal-text-read::-webkit-scrollbar-thumb { background-color: #eee; border-radius: 4px; }
       .routine-wrapper { flex: 1; overflow-y: visible; min-height: 0; padding-right: 2px; display: flex; flex-direction: column; gap: 10px; }
@@ -103,7 +97,6 @@
       .calendar-list, .journal-list { list-style: none; padding: 0; margin: 0; flex: 1; }
       .calendar-list li { padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; width: 100%; overflow: hidden; }
       
-      /* 行事曆文字樣式：支援點擊展開 */
       .cal-date { margin-right: 5px; font-weight: 600; color: var(--accent-brown); flex-shrink: 0; margin-top: 2px; }
       
       .cal-title-wrapper { 
@@ -141,7 +134,7 @@
       .journal-list li:last-child { border-bottom: none; }
       .journal-meta { font-size: 0.85rem; color: var(--accent-brown); font-weight: 600; font-family: 'Noto Serif TC', serif; margin-right: 5px; display: inline; }
 
-      .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+      .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
       .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
       .modal-content { background: white; width: 90%; max-width: 500px; padding: 25px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
       .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
@@ -297,27 +290,19 @@
                 <div class="btn-text">表格</div>
             </a>
 
-            <!-- NEW: 將顯化冥想 放在原本 目標實踐 的位置 -->
-            <div class="left-stack-wrapper grid-left-block">
-                <div class="muji-card" style="padding: 12px 15px; flex: 0 0 auto; height: auto;">
-                    <div class="card-label" style="margin-bottom: 2px;">感恩事件</div>
-                    <ul id="mini-gratitude-list"><li>讀取中...</li></ul>
-                    <div class="gratitude-compact">
-                        <input type="text" id="journal-text" class="input-underline" placeholder="隨手記錄...">
-                        <button type="button" class="btn-mini-muji" onclick="submitGratitude()">感謝</button>
-                    </div>
-                </div>
-                
-                <div class="muji-card" style="display: flex; flex-direction: column; min-height: 0; padding-bottom: 5px;">
-                    <div class="card-label">顯化冥想</div>
-                    <div style="flex: 1; overflow-y: auto; margin-right: -10px; padding-right: 10px;">
-                        <ul class="journal-list" id="list-manifestation"><li style="color:#ccc; text-align:center;">讀取中...</li></ul>
-                    </div>
+            <!-- NEW: 1. 感恩事件 變成橫向整區塊 (全寬) -->
+            <div class="muji-card grid-full-width" style="padding: 12px 15px;">
+                <div class="card-label" style="margin-bottom: 2px;">感恩事件</div>
+                <ul id="mini-gratitude-list"><li>讀取中...</li></ul>
+                <div class="gratitude-compact">
+                    <input type="text" id="journal-text" class="input-underline" placeholder="隨手記錄...">
+                    <button type="button" class="btn-mini-muji" onclick="submitGratitude()">感謝</button>
                 </div>
             </div>
             
-            <!-- NEW: 將目標實踐 取代 損益試算表 的位置 -->
-            <div class="muji-card grid-right-block" style="display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 0;">
+            <!-- NEW: 2. 目標實踐 變成和 顯化冥想 並列 (目標放左邊，顯化冥想放右邊) -->
+            <!-- 左方：目標實踐 -->
+            <div class="muji-card grid-left-block" style="display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 0;">
                 <div class="goal-header-group">
                      <div class="card-label" style="margin:0;">目標實踐</div>
                      <div style="display:flex; align-items:center;">
@@ -354,7 +339,14 @@
                 </div>
             </div>
 
-            <!-- NEW: 損益試算表 放在原本 顯化冥想 的位置 -->
+            <!-- 右方：顯化冥想 -->
+            <div class="muji-card grid-right-block" style="display: flex; flex-direction: column; min-height: 0; padding-bottom: 5px;">
+                <div class="card-label">顯化冥想</div>
+                <div style="flex: 1; overflow-y: auto; margin-right: -10px; padding-right: 10px;">
+                    <ul class="journal-list" id="list-manifestation"><li style="color:#ccc; text-align:center;">讀取中...</li></ul>
+                </div>
+            </div>
+
             <div class="muji-card grid-full-width">
                 <div class="card-label">損益試算表</div>
                 <div class="table-wrapper auto-height"><table id="table-profit" class="muji-table"></table></div>
@@ -365,9 +357,9 @@
                 <div class="table-wrapper scrollable"><table id="table-invest-calc" class="muji-table"></table></div>
             </div>
             
-            <!-- NEW: 投資計算表的下方 放入指定的自適應圖 -->
-            <div class="muji-card grid-full-width" style="padding: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; border: none; background: transparent; box-shadow: none;">
-                <img src="https://i.ibb.co/Xk39Yqcj/page-0003.jpg" alt="投資參考圖" style="width: 100%; height: auto; display: block; border-radius: 3px; border: 1px solid var(--border-color);">
+            <!-- NEW: 3. 圖片可以點選放大觀看 (點擊觸發 image-viewer-modal) -->
+            <div class="muji-card grid-full-width" style="padding: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; border: none; background: transparent; box-shadow: none; cursor: zoom-in;" onclick="document.getElementById('image-viewer-modal').classList.add('active')">
+                <img src="https://i.ibb.co/27TvxfSB/page-0003.jpg" alt="投資參考圖" style="width: 100%; height: auto; display: block; border-radius: 3px; border: 1px solid var(--border-color);">
             </div>
         </div>
       </div>
@@ -418,7 +410,6 @@
                         </div>
                     </div>
 
-                    <!-- NEW: Habit Section -->
                     <div class="routine-section" id="section-habit">
                          <div class="routine-header">HABIT CHECK</div>
                          <div class="toggle-row">
@@ -466,15 +457,15 @@
                     <div class="routine-section">
                         <div class="routine-header">AFTER DECISION REVIEW</div>
                         <div class="input-group">
-                            <label id="lbl_career_people">【正確】</label>
+                            <label id="lbl_career_people">正確決策</label>
                             <input type="text" id="career_people" placeholder="...">
                         </div>
                         <div class="input-group">
-                            <label id="lbl_career_incident">【失守】</label>
+                            <label id="lbl_career_incident">失守決策</label>
                             <input type="text" id="career_incident" placeholder="...">
                         </div>
                         <div class="input-group">
-                            <label id="lbl_career_next_focus">【覆盤】</label>
+                            <label id="lbl_career_next_focus">覆盤</label>
                             <input type="text" id="career_next_focus" placeholder="..." style="border-color: var(--muji-red);">
                         </div>
                     </div>
@@ -483,7 +474,7 @@
                         <div class="routine-header">WEALTH & MANIFESTATION</div>
                         <div class="input-group">
                             <label id="lbl_wealth_evidence">💰 金錢顯化</label>
-                            <textarea id="wealth_evidence" rows="2" placeholder="..."></textarea>
+                            <textarea id="wealth_evidence" rows="2" placeholder="..." style="border-color: var(--muji-red);"></textarea>
                         </div>
                         <div class="input-group" id="wrapper-invest">
                             <label id="lbl_invest_practice">📈 投資實戰</label>
@@ -545,6 +536,12 @@
         </div>
     </div>
     
+    <!-- NEW: 放大圖片的彈出視窗 -->
+    <div id="image-viewer-modal" class="modal-overlay" onclick="this.classList.remove('active')" style="cursor: zoom-out;">
+        <span class="material-icons-round close-btn" style="position: absolute; top: 20px; right: 20px; color: white; text-shadow: 0 0 5px rgba(0,0,0,0.5);">close</span>
+        <img src="https://i.ibb.co/27TvxfSB/page-0003.jpg" alt="投資參考圖放大" style="max-width: 90%; max-height: 90%; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+    </div>
+
     <div id="toast">已儲存</div>
     
     <script>
@@ -554,7 +551,6 @@
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       const db = firebase.database();
       
-      // === 核心修正：時區處理函式 ===
       function getLocalISOString() {
           const now = new Date();
           const year = now.getFullYear();
