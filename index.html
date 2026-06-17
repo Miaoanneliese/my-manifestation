@@ -876,7 +876,15 @@
             if (maniList) {
                 maniList.innerHTML = '';
                 if (!data.manifestationList || data.manifestationList.length === 0) maniList.innerHTML = '<li style="color:#ccc; text-align:center;">無資料</li>';
-                else data.manifestationList.forEach(item => { var li = document.createElement('li'); li.innerHTML = `<span class="journal-meta">${item.date}</span> ${item.content}`; maniList.appendChild(li); });
+                else data.manifestationList.forEach(item => {
+                    var li = document.createElement('li');
+                    var displayContent = item.content ? item.content.replace(/[A-Z][a-z]{2} [A-Z][a-z]{2} \d{2} \d{4} \d{2}:\d{2}:\d{2} GMT[+-]\d{4} \([^)]+\)/g, function(match) {
+                        var d = new Date(match);
+                        return isNaN(d) ? match : d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+                    }) : '';
+                    li.innerHTML = `<span class="journal-meta">${item.date}</span> ${displayContent}`;
+                    maniList.appendChild(li);
+                });
             }
       }
       function pushToFirebaseQueue(taskType, taskData, successMsg, callback) {
