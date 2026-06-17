@@ -297,6 +297,7 @@
                 <div class="btn-text">表格</div>
             </a>
 
+            <!-- NEW: 將顯化冥想 放在原本 目標實踐 的位置 -->
             <div class="left-stack-wrapper grid-left-block">
                 <div class="muji-card" style="padding: 12px 15px; flex: 0 0 auto; height: auto;">
                     <div class="card-label" style="margin-bottom: 2px;">感恩事件</div>
@@ -307,56 +308,66 @@
                     </div>
                 </div>
                 
-                <div class="muji-card" style="display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 0;">
-                    <div class="goal-header-group">
-                         <div class="card-label" style="margin:0;">目標實踐</div>
-                         <div style="display:flex; align-items:center;">
-                             <div class="cycle-badge" id="cycle-id">Cycle ...</div>
-                             <span id="cycle-rate" class="cycle-badge" style="background:var(--accent-brown); margin-left:5px;">0%</span>
-                         </div>
-                    </div>
-    
-                    <div class="macro-goal-container">
-                        <div class="macro-row" style="display: flex; gap: 10px;">
-                            <div style="flex: 1; display: flex; align-items: baseline; min-width: 0;">
-                                <span class="macro-label">年</span>
-                                <span id="goal-year" class="macro-text" onclick="toggleText(this)">...</span>
-                            </div>
-                            <div style="flex: 1; display: flex; align-items: baseline; min-width: 0;">
-                                <span class="macro-label">季</span>
-                                <span id="goal-season" class="macro-text" onclick="toggleText(this)">...</span>
-                            </div>
-                        </div>
-                        
-                        <div class="macro-row" style="margin-top: 8px;">
-                            <span class="macro-label">周</span>
-                            <span id="cycle-range-display" class="date-suffix" style="margin-right: 8px; color: #999; font-size: 0.75rem; font-weight: 500;"></span>
-                            <span id="goal-weekly" class="macro-text" onclick="toggleText(this)">...</span>
-                        </div>
-                    </div>
-    
-                    <div class="cycle-list-container">
-                        <div class="cycle-list-item"><span class="cycle-cat">職業</span> <span id="goal-career" class="cycle-desc">...</span></div>
-                        <div class="cycle-list-item"><span class="cycle-cat">健康</span> <span id="goal-health" class="cycle-desc">...</span></div>
-                        <div class="cycle-list-item"><span class="cycle-cat">財務</span> <span id="goal-wealth" class="cycle-desc">...</span></div>
-                        <div class="cycle-list-item"><span class="cycle-cat">技能</span> <span id="goal-skills" class="cycle-desc">...</span></div>
-                        <div class="cycle-list-item"><span class="cycle-cat">生活</span> <span id="goal-life" class="cycle-desc">...</span></div>
+                <div class="muji-card" style="display: flex; flex-direction: column; min-height: 0; padding-bottom: 5px;">
+                    <div class="card-label">顯化冥想</div>
+                    <div style="flex: 1; overflow-y: auto; margin-right: -10px; padding-right: 10px;">
+                        <ul class="journal-list" id="list-manifestation"><li style="color:#ccc; text-align:center;">讀取中...</li></ul>
                     </div>
                 </div>
             </div>
             
-            <div class="muji-card grid-right-block">
+            <!-- NEW: 將目標實踐 取代 損益試算表 的位置 -->
+            <div class="muji-card grid-right-block" style="display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 0;">
+                <div class="goal-header-group">
+                     <div class="card-label" style="margin:0;">目標實踐</div>
+                     <div style="display:flex; align-items:center;">
+                         <div class="cycle-badge" id="cycle-id">Cycle ...</div>
+                         <span id="cycle-rate" class="cycle-badge" style="background:var(--accent-brown); margin-left:5px;">0%</span>
+                     </div>
+                </div>
+
+                <div class="macro-goal-container">
+                    <div class="macro-row" style="display: flex; gap: 10px;">
+                        <div style="flex: 1; display: flex; align-items: baseline; min-width: 0;">
+                            <span class="macro-label">年</span>
+                            <span id="goal-year" class="macro-text" onclick="toggleText(this)">...</span>
+                        </div>
+                        <div style="flex: 1; display: flex; align-items: baseline; min-width: 0;">
+                            <span class="macro-label">季</span>
+                            <span id="goal-season" class="macro-text" onclick="toggleText(this)">...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="macro-row" style="margin-top: 8px;">
+                        <span class="macro-label">周</span>
+                        <span id="cycle-range-display" class="date-suffix" style="margin-right: 8px; color: #999; font-size: 0.75rem; font-weight: 500;"></span>
+                        <span id="goal-weekly" class="macro-text" onclick="toggleText(this)">...</span>
+                    </div>
+                </div>
+
+                <div class="cycle-list-container">
+                    <div class="cycle-list-item"><span class="cycle-cat">職業</span> <span id="goal-career" class="cycle-desc">...</span></div>
+                    <div class="cycle-list-item"><span class="cycle-cat">健康</span> <span id="goal-health" class="cycle-desc">...</span></div>
+                    <div class="cycle-list-item"><span class="cycle-cat">財務</span> <span id="goal-wealth" class="cycle-desc">...</span></div>
+                    <div class="cycle-list-item"><span class="cycle-cat">技能</span> <span id="goal-skills" class="cycle-desc">...</span></div>
+                    <div class="cycle-list-item"><span class="cycle-cat">生活</span> <span id="goal-life" class="cycle-desc">...</span></div>
+                </div>
+            </div>
+
+            <!-- NEW: 損益試算表 放在原本 顯化冥想 的位置 -->
+            <div class="muji-card grid-full-width">
                 <div class="card-label">損益試算表</div>
                 <div class="table-wrapper auto-height"><table id="table-profit" class="muji-table"></table></div>
             </div>
 
             <div class="muji-card grid-full-width">
-                <div class="card-label">顯化冥想</div>
-                <ul class="journal-list" id="list-manifestation"><li style="color:#ccc; text-align:center;">讀取中...</li></ul>
-            </div>
-            <div class="muji-card grid-full-width">
                 <div class="card-label">投資計算表</div>
                 <div class="table-wrapper scrollable"><table id="table-invest-calc" class="muji-table"></table></div>
+            </div>
+            
+            <!-- NEW: 投資計算表的下方 放入指定的自適應圖 -->
+            <div class="muji-card grid-full-width" style="padding: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; border: none; background: transparent; box-shadow: none;">
+                <img src="https://drive.google.com/uc?export=view&id=1xR6NEoHpq3btiO-mEToMKh0AzJj3o9vR" alt="投資參考圖" style="width: 100%; height: auto; display: block; border-radius: 3px; border: 1px solid var(--border-color);">
             </div>
         </div>
       </div>
