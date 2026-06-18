@@ -835,29 +835,31 @@
             if (ratioContainer) {
                 ratioContainer.innerHTML = '';
                 var ratios = data.expenseRatios || [
-                    { category: '生存底線', current: 3000, limit: 5000 },
-                    { category: '飲食耗材', current: 4000, limit: 4500 },
-                    { category: '能量體驗', current: 2000, limit: 1500 }
+                    { category: '生存底線', current: 0.3475, limit: 0.35 },
+                    { category: '飲食耗材', current: 0.1039, limit: 0.20 },
+                    { category: '保養折舊', current: 0.1551, limit: 0.10 }
                 ];
                 
                 if (ratios && ratios.length > 0) {
                     ratios.forEach(item => {
                         var currentAmt = item.current || 0;
                         var limitAmt = item.limit || 0;
-                        var actualPercent = limitAmt > 0 ? (currentAmt / limitAmt) * 100 : 0;
-                        var displayPercent = Math.min(actualPercent, 100);
-                        var remainingAmt = limitAmt - currentAmt;
                         
-                        var color = '#8D8170';
-                        if (actualPercent > 90) color = '#8a1c1c';
-                        else if (actualPercent > 70) color = '#f39c12';
+                        var displayCurrent = Math.round(currentAmt * 100);
+                        var displayLimit = Math.round(limitAmt * 100);
+                        
+                        var ratioPercent = limitAmt > 0 ? (currentAmt / limitAmt) * 100 : 0;
+                        var displayPercent = Math.min(ratioPercent, 100);
+                        
+                        var isOver = currentAmt > limitAmt;
+                        var color = isOver ? 'var(--muji-red)' : 'var(--muji-green)';
                         
                         var div = document.createElement('div');
                         div.style.marginBottom = '6px';
                         div.innerHTML = `
                             <div style="display:flex; justify-content:space-between; font-size: 0.75rem; margin-bottom: 3px; color: var(--text-main);">
                                 <span>${item.category}</span>
-                                <span style="font-family: monospace; color: ${color}; font-weight: ${actualPercent > 90 ? 'bold' : 'normal'};">${Math.round(remainingAmt).toLocaleString()}</span>
+                                <span style="font-family: monospace; color: ${color}; font-weight: ${isOver ? 'bold' : 'normal'};">${displayCurrent}% / ${displayLimit}%</span>
                             </div>
                             <div style="width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden;">
                                 <div style="height: 100%; width: ${displayPercent}%; background: ${color}; transition: width 0.3s ease;"></div>
