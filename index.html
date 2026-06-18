@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500&family=Material+Icons+Round&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js"></script>
     <style>
       :root { 
           --bg-color: #F9F9F6; 
@@ -365,7 +366,7 @@
                 <div class="table-wrapper scrollable"><table id="table-invest-calc" class="muji-table"></table></div>
             </div>
             
-            <div class="muji-card grid-full-width" style="padding: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; border: none; background: transparent; box-shadow: none; cursor: zoom-in;" onclick="document.getElementById('image-viewer-modal').classList.add('active')">
+            <div class="muji-card grid-full-width" style="padding: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; border: none; background: transparent; box-shadow: none; cursor: zoom-in;" onclick="openImageViewer()">
                 <img src="https://i.ibb.co/27TvxfSB/page-0003.jpg" alt="投資參考圖" style="width: 100%; height: auto; display: block; border-radius: 3px; border: 1px solid var(--border-color);">
             </div>
         </div>
@@ -543,9 +544,11 @@
         </div>
     </div>
     
-    <div id="image-viewer-modal" class="modal-overlay" onclick="this.classList.remove('active')" style="cursor: zoom-out;">
-        <span class="material-icons-round close-btn" style="position: absolute; top: 20px; right: 20px; color: white; text-shadow: 0 0 5px rgba(0,0,0,0.5);">close</span>
-        <img src="https://i.ibb.co/27TvxfSB/page-0003.jpg" alt="投資參考圖放大" style="max-width: 90%; max-height: 90%; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+    <div id="image-viewer-modal" class="modal-overlay" onclick="closeImageViewer(event)">
+        <span class="material-icons-round close-btn" style="position: absolute; top: 20px; right: 20px; color: white; text-shadow: 0 0 5px rgba(0,0,0,0.5); z-index: 2010;" onclick="closeImageViewer(event, true)">close</span>
+        <div id="pz-wrapper" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; cursor: grab;">
+            <img id="zoomed-image" src="https://i.ibb.co/27TvxfSB/page-0003.jpg" alt="投資參考圖放大" style="max-width: 90%; max-height: 90%; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+        </div>
     </div>
 
     <div id="toast">已儲存</div>
@@ -837,7 +840,8 @@
                 var ratios = data.expenseRatios || [
                     { category: '生存底線', current: 0.3475, limit: 0.35 },
                     { category: '飲食耗材', current: 0.1039, limit: 0.20 },
-                    { category: '保養折舊', current: 0.1551, limit: 0.10 }
+                    { category: '保養折舊', current: -0.0711, limit: 0.10 },
+                    { category: '投資本金', current: 0, limit: 0.20 }
                 ];
                 
                 if (ratios && ratios.length > 0) {
@@ -848,18 +852,33 @@
                         var displayCurrent = Math.round(currentAmt * 100);
                         var displayLimit = Math.round(limitAmt * 100);
                         
-                        var ratioPercent = limitAmt > 0 ? (currentAmt / limitAmt) * 100 : 0;
-                        var displayPercent = Math.min(ratioPercent, 100);
+                        var displayPercent = 0;
+                        if (displayCurrent > 0 && displayLimit > 0) {
+                            displayPercent = Math.min((displayCurrent / displayLimit) * 100, 100);
+                        } else if (displayCurrent > 0 && displayLimit <= 0) {
+                            displayPercent = 100;
+                        }
                         
-                        var isOver = currentAmt > limitAmt;
-                        var color = isOver ? 'var(--muji-red)' : 'var(--muji-green)';
+                        var color = 'var(--muji-green)';
+                        var fontWeight = 'normal';
+                        
+                        if (displayCurrent < 0) {
+                            color = 'var(--muji-green)';
+                            displayPercent = 0;
+                        } else if (displayCurrent === 0) {
+                            color = 'var(--accent-brown)';
+                            displayPercent = 0;
+                        } else if (displayCurrent >= displayLimit) {
+                            color = 'var(--muji-red)';
+                            fontWeight = 'bold';
+                        }
                         
                         var div = document.createElement('div');
                         div.style.marginBottom = '6px';
                         div.innerHTML = `
                             <div style="display:flex; justify-content:space-between; font-size: 0.75rem; margin-bottom: 3px; color: var(--text-main);">
                                 <span>${item.category}</span>
-                                <span style="font-family: monospace; color: ${color}; font-weight: ${isOver ? 'bold' : 'normal'};">${displayCurrent}% / ${displayLimit}%</span>
+                                <span style="font-family: monospace; color: ${color}; font-weight: ${fontWeight};">${displayCurrent}% / ${displayLimit}%</span>
                             </div>
                             <div style="width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden;">
                                 <div style="height: 100%; width: ${displayPercent}%; background: ${color}; transition: width 0.3s ease;"></div>
@@ -911,7 +930,7 @@
                 } else {
                     var listArray = Array.isArray(data.gratitudeList) ? data.gratitudeList : Object.values(data.gratitudeList);
                     listArray.sort((a, b) => new Date(a.date) - new Date(b.date));
-                    var recentItems = listArray.slice(-5);
+                    var recentItems = listArray.slice(-6);
                     
                     recentItems.forEach(item => { 
                         var li = document.createElement('li'); 
@@ -1016,10 +1035,6 @@
             };
 
             var q99Val = document.getElementById('j_q99').value;
-            var nextFocus = document.getElementById('career_next_focus').value;
-            if(nextFocus) {
-                 q99Val = (q99Val ? q99Val + " ｜ " : "") + nextFocus;
-            }
 
             var journalData = {
                 journalType: 'end',
@@ -1189,6 +1204,34 @@
               for (var j = 1; j < priceRow.cells.length; j++) {
                   var percentCell = percentRow.cells[j]; var priceCell = priceRow.cells[j];
                   if (percentCell && priceCell) { var val = parseFloat(percentCell.innerText.replace('%', '').trim()); if (!isNaN(val)) { if (val > 0) { percentCell.classList.add('text-pos'); priceCell.classList.add('text-pos'); } else if (val < 0) { percentCell.classList.add('text-neg'); priceCell.classList.add('text-neg'); } } }
+              }
+          }
+      }
+      
+      let pz;
+      function openImageViewer() {
+          document.getElementById('image-viewer-modal').classList.add('active');
+          const img = document.getElementById('zoomed-image');
+          if (!pz) {
+              pz = panzoom(img, {
+                  maxZoom: 5,
+                  minZoom: 1,
+                  bounds: true,
+                  boundsPadding: 0.1
+              });
+          } else {
+              pz.zoomAbs(0, 0, 1);
+              pz.moveTo(0, 0);
+          }
+      }
+      
+      function closeImageViewer(e, force) {
+          // 點擊背景、外框、或點選強制關閉鈕時才關閉，避免縮放時誤觸
+          if (force || e.target.id === 'image-viewer-modal' || e.target.id === 'pz-wrapper') {
+              document.getElementById('image-viewer-modal').classList.remove('active');
+              if (pz) {
+                  pz.zoomAbs(0, 0, 1); // 復原比例
+                  pz.moveTo(0, 0);     // 復原位置
               }
           }
       }
