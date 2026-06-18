@@ -8,7 +8,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-      /* --- Muji 風格色系 --- */
       :root { 
           --bg-color: #F9F9F6; 
           --card-bg: #FFFFFF; 
@@ -294,9 +293,7 @@
                 <div class="btn-text">表格</div>
             </a>
 
-            <!-- NEW: 1. 支出比例(左, 1) 與 感恩事件(右, 2) -->
             <div class="expense-gratitude-wrapper">
-                <!-- 支出比例 -->
                 <div class="muji-card expense-ratio-block">
                     <div class="card-label" style="margin-bottom: 8px;">支出比例</div>
                     <div id="expense-ratio-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; justify-content: center;">
@@ -304,7 +301,6 @@
                     </div>
                 </div>
 
-                <!-- 感恩事件 -->
                 <div class="muji-card gratitude-block">
                     <div class="card-label" style="margin-bottom: 2px;">感恩事件</div>
                     <ul id="mini-gratitude-list"><li>讀取中...</li></ul>
@@ -315,8 +311,6 @@
                 </div>
             </div>
             
-            <!-- NEW: 2. 目標實踐 變成和 顯化冥想 並列 (目標放左邊，顯化冥想放右邊) -->
-            <!-- 左方：目標實踐 -->
             <div class="muji-card grid-left-block" style="display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 0;">
                 <div class="goal-header-group">
                      <div class="card-label" style="margin:0;">目標實踐</div>
@@ -354,7 +348,6 @@
                 </div>
             </div>
 
-            <!-- 右方：顯化冥想 -->
             <div class="muji-card grid-right-block" style="display: flex; flex-direction: column; min-height: 0; padding-bottom: 5px;">
                 <div class="card-label">顯化冥想</div>
                 <div style="flex: 1; overflow-y: auto; margin-right: -10px; padding-right: 10px;">
@@ -372,7 +365,6 @@
                 <div class="table-wrapper scrollable"><table id="table-invest-calc" class="muji-table"></table></div>
             </div>
             
-            <!-- NEW: 3. 圖片可以點選放大觀看 (點擊觸發 image-viewer-modal) -->
             <div class="muji-card grid-full-width" style="padding: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; border: none; background: transparent; box-shadow: none; cursor: zoom-in;" onclick="document.getElementById('image-viewer-modal').classList.add('active')">
                 <img src="https://i.ibb.co/27TvxfSB/page-0003.jpg" alt="投資參考圖" style="width: 100%; height: auto; display: block; border-radius: 3px; border: 1px solid var(--border-color);">
             </div>
@@ -551,7 +543,6 @@
         </div>
     </div>
     
-    <!-- NEW: 放大圖片的彈出視窗 -->
     <div id="image-viewer-modal" class="modal-overlay" onclick="this.classList.remove('active')" style="cursor: zoom-out;">
         <span class="material-icons-round close-btn" style="position: absolute; top: 20px; right: 20px; color: white; text-shadow: 0 0 5px rgba(0,0,0,0.5);">close</span>
         <img src="https://i.ibb.co/27TvxfSB/page-0003.jpg" alt="投資參考圖放大" style="max-width: 90%; max-height: 90%; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
@@ -617,7 +608,6 @@
         });
         
         if (!window.navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
-             console.log("建議加入主畫面以獲得最佳全螢幕體驗");
         }
         
         document.addEventListener('contextmenu', event => event.preventDefault());
@@ -629,7 +619,6 @@
           const msToMidnight = night.getTime() - now.getTime();
 
           setTimeout(function() {
-              console.log("Midnight! Refreshing data...");
               updateDate(); 
               loadDashboardFromFirebase(); 
               setupMidnightRefresh(); 
@@ -703,7 +692,6 @@
             }
         })
         .catch(err => {
-            console.error("無法讀取目標", err);
         });
       }
       
@@ -813,7 +801,6 @@
         db.ref('system/lastUpdate').on('value', (snapshot) => {
             const timestamp = snapshot.val();
             if(timestamp) {
-                console.log("收到更新信號:", timestamp);
                 loadDashboardFromFirebase(); 
             }
         });
@@ -831,7 +818,6 @@
                 document.getElementById('daily-quote').innerText = "無資料";
             }
         }).catch((error) => {
-            console.error("Firebase:", error);
             document.getElementById('daily-quote').innerText = "讀取失敗";
         });
       }
@@ -845,33 +831,33 @@
             renderTable(data.investCalcData, 'table-invest-calc');
             renderTable(data.profitData, 'table-profit');
 
-            // --- 支出比例渲染模組 ---
             var ratioContainer = document.getElementById('expense-ratio-container');
             if (ratioContainer) {
                 ratioContainer.innerHTML = '';
-                // 若後端 data.expenseRatios 尚未有資料，預設呈現展示資料供預覽
                 var ratios = data.expenseRatios || [
-                    { category: '生存底線', percent: 65 }, // 0-70%: 大地棕
-                    { category: '飲食耗材', percent: 85 }, // 71-90%: 亮橘色
-                    { category: '能量體驗', percent: 95 }  // 91%+: 赤紅色
+                    { category: '生存底線', current: 3000, limit: 5000 },
+                    { category: '飲食耗材', current: 4000, limit: 4500 },
+                    { category: '能量體驗', current: 2000, limit: 1500 }
                 ];
                 
                 if (ratios && ratios.length > 0) {
                     ratios.forEach(item => {
-                        // 支援兩種格式：直接給 percent 或給 current 與 limit
-                        var actualPercent = item.percent !== undefined ? item.percent : (item.limit > 0 ? (item.current / item.limit) * 100 : 0);
+                        var currentAmt = item.current || 0;
+                        var limitAmt = item.limit || 0;
+                        var actualPercent = limitAmt > 0 ? (currentAmt / limitAmt) * 100 : 0;
                         var displayPercent = Math.min(actualPercent, 100);
+                        var remainingAmt = limitAmt - currentAmt;
                         
-                        var color = '#8D8170'; // 安全水位 0-70% (大地棕)
-                        if (actualPercent > 90) color = '#8a1c1c'; // 超標/斷路水位 91%+ (赤紅色)
-                        else if (actualPercent > 70) color = '#f39c12'; // 警戒水位 71-90% (亮橘色)
+                        var color = '#8D8170';
+                        if (actualPercent > 90) color = '#8a1c1c';
+                        else if (actualPercent > 70) color = '#f39c12';
                         
                         var div = document.createElement('div');
                         div.style.marginBottom = '6px';
                         div.innerHTML = `
                             <div style="display:flex; justify-content:space-between; font-size: 0.75rem; margin-bottom: 3px; color: var(--text-main);">
                                 <span>${item.category}</span>
-                                <span style="font-family: monospace; color: ${color}; font-weight: ${actualPercent > 90 ? 'bold' : 'normal'};">${Math.round(actualPercent)}%</span>
+                                <span style="font-family: monospace; color: ${color}; font-weight: ${actualPercent > 90 ? 'bold' : 'normal'};">${Math.round(remainingAmt).toLocaleString()}</span>
                             </div>
                             <div style="width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden;">
                                 <div style="height: 100%; width: ${displayPercent}%; background: ${color}; transition: width 0.3s ease;"></div>
