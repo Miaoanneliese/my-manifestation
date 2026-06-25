@@ -2,7 +2,15 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- PWA 靜態安裝準備 (沉浸式全螢幕) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#F9F9F6">
+    <meta name="apple-mobile-web-app-title" content="生活手帖">
+    
     <title>我的生活・投資手帖</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500&family=Material+Icons+Round&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -14,7 +22,7 @@
           --card-bg: #FFFFFF; 
           --text-main: #4a4a4a; 
           --text-sub: #999999; 
-          --border-color: #EBEBEB;    
+          --border-color: #EBEBEB;  
           --muji-red: #8a1c1c; 
           --muji-green: #6c8c6e; 
           --accent-brown: #8D8170; 
@@ -38,7 +46,7 @@
       }
       input, textarea { user-select: text; -webkit-user-select: text; }
 
-      header { background-color: var(--bg-color); padding: 25px 20px 10px; }
+      header { background-color: var(--bg-color); padding: 25px 20px 10px; padding-top: max(25px, env(safe-area-inset-top)); }
       
       .date-weather-box { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--text-main); padding-bottom: 10px; }
       .current-date { font-family: 'Noto Serif TC', serif; font-size: 1.5rem; font-weight: 900; color: #333; }
@@ -496,7 +504,7 @@
                         <div class="routine-header">HEALTH & SKILLS</div>
                         <div class="chip-group" id="health-chips-container" style="margin-bottom: 15px;">
                             <label class="muji-chip"><input type="checkbox" id="check_duolingo"><span id="lbl_check_duolingo">日文</span></label>
-                            <label class="muji-chip"><input type="checkbox" id="check_duolingo"><span id="lbl_check_Speak">英文</span></label>
+                            <label class="muji-chip"><input type="checkbox" id="check_speak"><span id="lbl_check_Speak">英文</span></label>
                             <label class="muji-chip"><input type="checkbox" id="check_reading"><span id="lbl_check_reading">閱讀</span></label>
                         </div>
                         <div class="input-group">
@@ -559,9 +567,34 @@
       const firebaseConfig = { apiKey: "AIzaSyAa57KrUxbmw4k1YFDuEuREPmmYXhrNRGY", authDomain: "manifestation-fc95b.firebaseapp.com", databaseURL: "https://manifestation-fc95b-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "manifestation-fc95b", storageBucket: "manifestation-fc95b.firebasestorage.app", messagingSenderId: "330306956614", appId: "1:330306956614:web:482c539a49d63dfc34c947", measurementId: "G-2J15VBFWGG" };
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       const db = firebase.database();
-      
-      function getLocalISOString() {
+
+      // DOM Cache 物件，減少 document.getElementById 調用次數
+      const D = {};
+
+      function initDOMCache() {
+          const ids = ['header-date', 'header-day', 'weather-display', 'today-expense', 'month-expense', 'daily-quote', 'goal-display', 
+                       'table-invest-calc', 'table-profit', 'expense-ratio-container', 'calendar-list', 'mini-gratitude-list', 'list-manifestation',
+                       'cycle-id', 'goal-year', 'goal-season', 'goal-weekly', 'cycle-range-display', 'goal-career', 'goal-health', 'goal-wealth', 
+                       'goal-skills', 'goal-life', 'cycle-rate', 'is_recording_day', 'daily-progress-bar', 'progress-text', 'career_people', 
+                       'career_incident', 'career_next_focus', 'sport_execution', 'beauty_routine', 'wealth_evidence', 'invest_practice', 
+                       'declutter_item', 'declutter_area', 'j_q86', 'j_q87', 'j_q88', 'j_q90', 'check_duolingo', 'check_speak', 'check_reading'];
+          ids.forEach(id => {
+              D[id] = document.getElementById(id);
+          });
+      }
+
+      // --- 核心時區校準 (The 3:30 AM Cycle) ---
+      function getAdjustedNow() {
           const now = new Date();
+          // 若時間在凌晨 00:00 到 03:29 之間，視為「昨天」
+          if (now.getHours() < 3 || (now.getHours() === 3 && now.getMinutes() < 30)) {
+              return new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          }
+          return now;
+      }
+
+      function getLocalISOString() {
+          const now = getAdjustedNow();
           const year = now.getFullYear();
           const month = (now.getMonth() + 1).toString().padStart(2, '0');
           const day = now.getDate().toString().padStart(2, '0');
@@ -569,7 +602,7 @@
       }
 
       function getLocalFullTimestamp() {
-          const now = new Date();
+          const now = new Date(); // 實際打卡時間點保留真實時間，但日期歸屬交由 ISOString
           const year = now.getFullYear();
           const month = (now.getMonth() + 1).toString().padStart(2, '0');
           const day = now.getDate().toString().padStart(2, '0');
@@ -587,10 +620,13 @@
       }
 
       window.onload = function() {
-        updateDate(); getWeather(); setupDashboardListener(); 
+        initDOMCache();
+        updateDate(); 
+        getWeatherWithCache(); 
+        setupDashboardListener(); 
         setupMidnightRefresh(); 
         
-        fetchCurrentMission();
+        fetchCurrentMissionWithCache();
 
         setLocalToday('s_date');
         setLocalToday('d_date');
@@ -602,38 +638,39 @@
         if(document.getElementById('d_trend')) updateDayTradeReason();
         
         document.querySelectorAll('#modal-end input, #modal-end select, #modal-end textarea').forEach(el => {
+            // 綁定輸入監聽，動態更新進度條
             el.addEventListener('input', updateProgress);
             el.addEventListener('change', updateProgress);
         });
         
-        document.getElementById('is_recording_day').addEventListener('change', function() {
-            autoSelectRoutine();
-        });
-        
-        if (!window.navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
+        if (D.is_recording_day) {
+            D.is_recording_day.addEventListener('change', autoSelectRoutine);
         }
         
         document.addEventListener('contextmenu', event => event.preventDefault());
       };
 
+      // 改為凌晨 03:30 刷新
       function setupMidnightRefresh() {
           const now = new Date();
-          const night = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0); 
-          const msToMidnight = night.getTime() - now.getTime();
+          let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 3, 30, 0);
+          if (now.getTime() >= target.getTime()) {
+              target.setDate(target.getDate() + 1); // 如果已經超過今天的 3:30，設定為明天的 3:30
+          }
+          const msToTarget = target.getTime() - now.getTime();
 
           setTimeout(function() {
               updateDate(); 
               loadDashboardFromFirebase(); 
+              fetchCurrentMissionWithCache(true); // 強制刷新目標
               setupMidnightRefresh(); 
-          }, msToMidnight);
+          }, msToTarget);
       }
 
       function autoSelectRoutine() {
-        const isRecording = document.getElementById('is_recording_day').checked;
-        const beautySelect = document.getElementById('beauty_routine');
+        const isRecording = D.is_recording_day.checked;
         const investWrapper = document.getElementById('wrapper-invest');
         const declutterSection = document.getElementById('section-declutter');
-        const sportSelect = document.getElementById('sport_execution');
         const habitSection = document.getElementById('section-habit');
         
         if (isRecording) {
@@ -657,50 +694,56 @@
         updateProgress();
       }
 
-      function fetchCurrentMission() {
+      // --- API 快取機制：週期目標 (GAS) ---
+      function fetchCurrentMissionWithCache(forceRefresh = false) {
         if(GAS_URL.includes("你的_SCRIPT_ID")) return;
+        const cacheKey = 'missionCache';
+        const cachedStr = localStorage.getItem(cacheKey);
+        
+        if (!forceRefresh && cachedStr) {
+            try {
+                const cacheData = JSON.parse(cachedStr);
+                // 檢查是否過期 (設定 12 小時)
+                if (new Date().getTime() < cacheData.expiry) {
+                    renderMissionData(cacheData.data);
+                    return;
+                }
+            } catch (e) { /* 解析失敗則重新獲取 */ }
+        }
+
         fetch(GAS_URL + "?action=getMission") 
         .then(response => response.json())
         .then(data => {
-            let cycleText = `Cycle ${data.cycle_id || '?'}`;
-            document.getElementById('cycle-id').innerText = cycleText;
-
-            document.getElementById('goal-year').innerText = data.year_goal || '尚未設定年度目標';
-            document.getElementById('goal-season').innerText = data.season_goal || '尚未設定季度目標';
-            document.getElementById('goal-weekly').innerText = data.cycle_goal || '尚未設定周目標';
-            
-            if(document.getElementById('cycle-range-display')) {
-                document.getElementById('cycle-range-display').innerText = data.cycle_range || '';
-            }
-
-            document.getElementById('goal-career').innerText = data.career || '-';
-            document.getElementById('goal-health').innerText = data.health || '-';
-            document.getElementById('goal-wealth').innerText = data.wealth || '-';
-            document.getElementById('goal-skills').innerText = data.skills || '-';
-            document.getElementById('goal-life').innerText = data.life || '-';
-            
-            if (data.habit_names && data.habit_names.length >= 4) {
-                if(document.getElementById('lbl_habit_1')) document.getElementById('lbl_habit_1').innerText = data.habit_names[0];
-                if(document.getElementById('lbl_habit_2')) document.getElementById('lbl_habit_2').innerText = data.habit_names[1];
-                if(document.getElementById('lbl_habit_3')) document.getElementById('lbl_habit_3').innerText = data.habit_names[2];
-                if(document.getElementById('lbl_habit_4')) document.getElementById('lbl_habit_4').innerText = data.habit_names[3];
-            }
-            
-            if(document.getElementById('cycle-rate')) {
-                document.getElementById('cycle-rate').innerText = data.completion_rate || "0%";
-            }
-            
-            if(data.questions && data.questions.length > 0) {
-                applyFormConfig(data.questions);
-            }
+            const expiryTime = new Date().getTime() + (12 * 60 * 60 * 1000); // 12小時 TTL
+            localStorage.setItem(cacheKey, JSON.stringify({ expiry: expiryTime, data: data }));
+            renderMissionData(data);
         })
-        .catch(err => {
-        });
+        .catch(err => console.log("Mission fetch failed"));
+      }
+
+      function renderMissionData(data) {
+          if (D['cycle-id']) D['cycle-id'].innerText = `Cycle ${data.cycle_id || '?'}`;
+          if (D['goal-year']) D['goal-year'].innerText = data.year_goal || '尚未設定年度目標';
+          if (D['goal-season']) D['goal-season'].innerText = data.season_goal || '尚未設定季度目標';
+          if (D['goal-weekly']) D['goal-weekly'].innerText = data.cycle_goal || '尚未設定周目標';
+          if (D['cycle-range-display']) D['cycle-range-display'].innerText = data.cycle_range || '';
+          if (D['goal-career']) D['goal-career'].innerText = data.career || '-';
+          if (D['goal-health']) D['goal-health'].innerText = data.health || '-';
+          if (D['goal-wealth']) D['goal-wealth'].innerText = data.wealth || '-';
+          if (D['goal-skills']) D['goal-skills'].innerText = data.skills || '-';
+          if (D['goal-life']) D['goal-life'].innerText = data.life || '-';
+          
+          if (data.habit_names && data.habit_names.length >= 4) {
+              if(document.getElementById('lbl_habit_1')) document.getElementById('lbl_habit_1').innerText = data.habit_names[0];
+              if(document.getElementById('lbl_habit_2')) document.getElementById('lbl_habit_2').innerText = data.habit_names[1];
+              if(document.getElementById('lbl_habit_3')) document.getElementById('lbl_habit_3').innerText = data.habit_names[2];
+              if(document.getElementById('lbl_habit_4')) document.getElementById('lbl_habit_4').innerText = data.habit_names[3];
+          }
+          if (D['cycle-rate']) D['cycle-rate'].innerText = data.completion_rate || "0%";
+          if (data.questions && data.questions.length > 0) applyFormConfig(data.questions);
       }
       
-      function toggleText(el) {
-          el.classList.toggle('expanded');
-      }
+      function toggleText(el) { el.classList.toggle('expanded'); }
 
       function updateChipInput(checkbox, inputId) {
         const input = document.getElementById(inputId);
@@ -719,7 +762,6 @@
          questions.forEach(q => {
              var el = document.getElementById(q.id);
              var labelEl = document.getElementById("lbl_" + q.id);
-             
              if(labelEl) labelEl.innerText = q.label;
              if(el && q.placeholder) el.placeholder = q.placeholder;
 
@@ -730,8 +772,7 @@
                      q.options.forEach(opt => {
                          if (opt !== 'Plan B') {
                              var option = document.createElement("option");
-                             option.value = opt;
-                             option.innerText = opt;
+                             option.value = opt; option.innerText = opt;
                              el.appendChild(option);
                          }
                      });
@@ -740,7 +781,6 @@
                      if(q.id === 'invest_practice') containerId = 'invest-chips';
                      if(q.id === 'sport_execution') containerId = 'sport-chips';
                      if(q.id === 'beauty_routine') containerId = 'beauty-chips';
-                     
                      var chipContainer = document.getElementById(containerId);
                      if(chipContainer) {
                          chipContainer.innerHTML = '';
@@ -756,122 +796,107 @@
          });
       }
 
+      // --- DOM 快取效能優化 (取代 getElementById 暴力掃描) ---
       function updateProgress() {
-        const isRecording = document.getElementById('is_recording_day').checked;
+        if (!D.is_recording_day) return;
+        const isRecording = D.is_recording_day.checked;
         let total = 10; 
-        
-        if (isRecording) {
-            total = 4; 
-        }
+        if (isRecording) total = 4; 
 
         let completed = 0;
-        
-        if (document.getElementById('career_people').value && document.getElementById('career_next_focus').value) completed++;
+        if (D.career_people && D.career_people.value && D.career_next_focus && D.career_next_focus.value) completed++;
         
         if (isRecording) {
-             if (document.getElementById('sport_execution').value) completed++;
+             if (D.sport_execution && D.sport_execution.value) completed++;
         } else {
-             if (document.getElementById('sport_execution').value) completed++;
-             if (document.getElementById('check_duolingo').checked && document.getElementById('check_reading').checked) completed += 0.5; 
+             if (D.sport_execution && D.sport_execution.value) completed++;
+             if (D.check_duolingo && D.check_duolingo.checked && D.check_reading && D.check_reading.checked) completed += 0.5; 
         }
         
-        if (document.getElementById('beauty_routine').value) completed++;
-        if (document.getElementById('wealth_evidence').value) completed++;
+        if (D.beauty_routine && D.beauty_routine.value) completed++;
+        if (D.wealth_evidence && D.wealth_evidence.value) completed++;
         
         if (!isRecording) {
-            if (document.getElementById('invest_practice').value) completed++;
-            if (document.getElementById('declutter_item').value) completed++;
+            if (D.invest_practice && D.invest_practice.value) completed++;
+            if (D.declutter_item && D.declutter_item.value) completed++;
             
-            if (document.getElementById('j_q86').checked) completed++;
-            if (document.getElementById('j_q87').checked) completed++;
-            if (document.getElementById('j_q88').checked) completed++;
-            if (document.getElementById('j_q90').checked) completed++;
+            if (D.j_q86 && D.j_q86.checked) completed++;
+            if (D.j_q87 && D.j_q87.checked) completed++;
+            if (D.j_q88 && D.j_q88.checked) completed++;
+            if (D.j_q90 && D.j_q90.checked) completed++;
         }
 
         let percent = (total === 0) ? 0 : Math.floor((completed / total) * 100);
-        document.getElementById('daily-progress-bar').style.width = percent + "%";
-        document.getElementById('progress-text').innerText = percent + "%";
+        if (D['daily-progress-bar']) D['daily-progress-bar'].style.width = percent + "%";
+        if (D['progress-text']) D['progress-text'].innerText = percent + "%";
         return percent;
       }
       
-      function updateInvestInput(checkbox) {
-          updateChipInput(checkbox, 'invest_practice');
+      // 防抖函數 (Debounce)
+      function debounce(func, delay) {
+          let timeoutId;
+          return function(...args) {
+              clearTimeout(timeoutId);
+              timeoutId = setTimeout(() => { func.apply(this, args); }, delay);
+          };
       }
 
       function setupDashboardListener() {
         loadDashboardFromFirebase(); 
-
+        
+        // 降低 Firebase on value 觸發頻率，防抖 1 秒
+        const debouncedLoad = debounce(() => { loadDashboardFromFirebase(); }, 1000);
         db.ref('system/lastUpdate').on('value', (snapshot) => {
-            const timestamp = snapshot.val();
-            if(timestamp) {
-                loadDashboardFromFirebase(); 
+            if(snapshot.val()) {
+                debouncedLoad();
             }
         });
       }
 
       function loadDashboardFromFirebase() {
-        if(document.getElementById('daily-quote')) document.getElementById('daily-quote').innerText = "雲端同步中...";
-        
+        if(D['daily-quote']) D['daily-quote'].innerText = "雲端同步中...";
         db.ref('dashboard').once('value').then((snapshot) => {
             const data = snapshot.val();
             if (data) {
                 renderDashboard(data);
-                if(document.getElementById('daily-quote')) document.getElementById('daily-quote').style.color = "var(--accent-brown)"; 
+                if(D['daily-quote']) D['daily-quote'].style.color = "var(--accent-brown)"; 
             } else {
-                document.getElementById('daily-quote').innerText = "無資料";
+                if(D['daily-quote']) D['daily-quote'].innerText = "無資料";
             }
         }).catch((error) => {
-            document.getElementById('daily-quote').innerText = "讀取失敗";
+            if(D['daily-quote']) D['daily-quote'].innerText = "讀取失敗";
         });
       }
 
       function renderDashboard(data) {
             if(!data) return;
-            if(document.getElementById('today-expense')) document.getElementById('today-expense').innerText = (data.todayExpense || 0).toLocaleString();
-            if(document.getElementById('month-expense')) document.getElementById('month-expense').innerText = data.monthExpense;
-            if(document.getElementById('daily-quote')) document.getElementById('daily-quote').innerText = data.quote;
-            if(document.getElementById('goal-display')) document.getElementById('goal-display').innerText = data.goalText || "尚無目標"; 
+            if(D['today-expense']) D['today-expense'].innerText = (data.todayExpense || 0).toLocaleString();
+            if(D['month-expense']) D['month-expense'].innerText = data.monthExpense;
+            if(D['daily-quote']) D['daily-quote'].innerText = data.quote;
+            if(D['goal-display']) D['goal-display'].innerText = data.goalText || "尚無目標"; 
             renderTable(data.investCalcData, 'table-invest-calc');
             renderTable(data.profitData, 'table-profit');
 
-            var ratioContainer = document.getElementById('expense-ratio-container');
+            var ratioContainer = D['expense-ratio-container'];
             if (ratioContainer) {
                 ratioContainer.innerHTML = '';
-                var ratios = data.expenseRatios || [
-                    { category: '生存底線', current: 0.3475, limit: 0.35 },
-                    { category: '飲食耗材', current: 0.1039, limit: 0.20 },
-                    { category: '保養折舊', current: -0.0711, limit: 0.10 },
-                    { category: '投資本金', current: 0, limit: 0.20 }
-                ];
-                
+                var ratios = data.expenseRatios || [];
                 if (ratios && ratios.length > 0) {
                     ratios.forEach(item => {
                         var currentAmt = item.current || 0;
                         var limitAmt = item.limit || 0;
-                        
                         var displayCurrent = Math.round(currentAmt * 100);
                         var displayLimit = Math.round(limitAmt * 100);
-                        
                         var displayPercent = 0;
-                        if (displayCurrent > 0 && displayLimit > 0) {
-                            displayPercent = Math.min((displayCurrent / displayLimit) * 100, 100);
-                        } else if (displayCurrent > 0 && displayLimit <= 0) {
-                            displayPercent = 100;
-                        }
+                        if (displayCurrent > 0 && displayLimit > 0) displayPercent = Math.min((displayCurrent / displayLimit) * 100, 100);
+                        else if (displayCurrent > 0 && displayLimit <= 0) displayPercent = 100;
                         
                         var color = 'var(--muji-green)';
                         var fontWeight = 'normal';
                         
-                        if (displayCurrent < 0) {
-                            color = 'var(--muji-green)';
-                            displayPercent = 0;
-                        } else if (displayCurrent === 0) {
-                            color = 'var(--accent-brown)';
-                            displayPercent = 0;
-                        } else if (displayCurrent >= displayLimit) {
-                            color = 'var(--muji-red)';
-                            fontWeight = 'bold';
-                        }
+                        if (displayCurrent < 0) { displayPercent = 0; } 
+                        else if (displayCurrent === 0) { color = 'var(--accent-brown)'; displayPercent = 0; } 
+                        else if (displayCurrent >= displayLimit) { color = 'var(--muji-red)'; fontWeight = 'bold'; }
                         
                         var div = document.createElement('div');
                         div.style.marginBottom = '6px';
@@ -891,13 +916,13 @@
                 }
             }
             
-            var calList = document.getElementById('calendar-list');
+            var calList = D['calendar-list'];
             if(calList && data.calendarEvents) {
                 calList.innerHTML = '';
                 if(data.calendarEvents.length === 0) {
                     calList.innerHTML = '<li style="color:#ccc; justify-content:center;">暫無行程</li>';
                 } else {
-                    var now = new Date();
+                    var now = getAdjustedNow();
                     var tStr = (now.getMonth() + 1) + "/" + now.getDate();
                     var max = 5; 
                     data.calendarEvents.slice(0, max).forEach(evt => {
@@ -922,7 +947,7 @@
                 }
             } else if(calList) { calList.innerHTML = '<li style="color:#ccc; justify-content:center;">暫無行程</li>'; }
 
-            var miniGratList = document.getElementById('mini-gratitude-list');
+            var miniGratList = D['mini-gratitude-list'];
             if (miniGratList) {
                 miniGratList.innerHTML = '';
                 if (!data.gratitudeList || Object.keys(data.gratitudeList).length === 0) {
@@ -931,7 +956,6 @@
                     var listArray = Array.isArray(data.gratitudeList) ? data.gratitudeList : Object.values(data.gratitudeList);
                     listArray.sort((a, b) => new Date(a.date) - new Date(b.date));
                     var recentItems = listArray.slice(-6);
-                    
                     recentItems.forEach(item => { 
                         var li = document.createElement('li'); 
                         var shortDate = (item.date && item.date.length >= 5) ? item.date.substring(5) : item.date;
@@ -940,7 +964,7 @@
                     });
                 }
             }
-            var maniList = document.getElementById('list-manifestation');
+            var maniList = D['list-manifestation'];
             if (maniList) {
                 maniList.innerHTML = '';
                 if (!data.manifestationList || data.manifestationList.length === 0) maniList.innerHTML = '<li style="color:#ccc; text-align:center;">無資料</li>';
@@ -955,6 +979,7 @@
                 });
             }
       }
+
       function pushToFirebaseQueue(taskType, taskData, successMsg, callback) {
           showToast("處理中...");
           db.ref('request_queue').push({ type: taskType, timestamp: getLocalFullTimestamp(), ...taskData }).then(() => { showToast(successMsg || "已紀錄"); if (callback) callback(); }).catch(error => alert("寫入失敗: " + error.message));
@@ -977,21 +1002,17 @@
             chuanPay: document.getElementById('chuanPay').value, 
             note: document.getElementById('note').value 
         }; 
-        pushToFirebaseQueue('expense', formData, "已記帳", () => { closeModal(); document.getElementById('modal-form').reset(); btn.disabled = false; let current = parseFloat(document.getElementById('today-expense').innerText.replace(/,/g,'')) || 0; document.getElementById('today-expense').innerText = (current + (parseFloat(formData.amount)||0)).toLocaleString(); });
+        pushToFirebaseQueue('expense', formData, "已記帳", () => { closeModal(); document.getElementById('modal-form').reset(); btn.disabled = false; let current = parseFloat((D['today-expense'].innerText || "0").replace(/,/g,'')) || 0; D['today-expense'].innerText = (current + (parseFloat(formData.amount)||0)).toLocaleString(); });
       }
 
       function appendNote(text) {
           var noteInput = document.getElementById('note');
-          if (noteInput.value) {
-              noteInput.value += ' ' + text;
-          } else {
-              noteInput.value = text;
-          }
+          if (noteInput.value) { noteInput.value += ' ' + text; } 
+          else { noteInput.value = text; }
       }
 
       function submitGratitude() { 
-        var btn = event.target; 
-        btn.disabled = true; 
+        var btn = event.target; btn.disabled = true; 
         var content = document.getElementById('journal-text').value; 
         var today = getLocalISOString();
         pushToFirebaseQueue('journal', { journalType: 'gratitude', content: content, date: today }, "已保存", () => { document.getElementById('journal-text').value = ""; btn.disabled = false; }); 
@@ -1006,7 +1027,7 @@
             data.date = document.getElementById('j_date_start').value;
             data.q3 = document.getElementById('j_q3').value; 
             data.q4 = document.getElementById('j_q4').value; 
-            pushToFirebaseQueue('journal', data, "一日之始已紀錄", () => { closeJournalModal(type); btn.disabled = false; });
+            pushToFirebaseQueue('journal', data, "一日之始已紀錄", () => { closeJournalModal(type); document.getElementById('j_q3').value = ''; btn.disabled = false; });
         } 
         else if (type === 'middle') { 
             data.date = document.getElementById('j_date_middle').value;
@@ -1023,18 +1044,16 @@
         else if (type === 'end') { 
             var routineData = {
               date: document.getElementById('j_date_end').value,
-              is_recording: document.getElementById('is_recording_day').checked ? "是" : "否",
-              career_review: `【人】${document.getElementById('career_people').value} | 【事】${document.getElementById('career_incident').value || '無'} | 【焦點】${document.getElementById('career_next_focus').value}`,
-              health_status: `運動:${document.getElementById('sport_execution').value} | 保養:${document.getElementById('beauty_routine').value}`,
-              wealth_evidence: document.getElementById('wealth_evidence').value,
-              invest_practice: document.getElementById('invest_practice').value,
-              declutter_item: `${document.getElementById('declutter_item').value} (${document.getElementById('declutter_area').value})`,
+              is_recording: D.is_recording_day.checked ? "是" : "否",
+              career_review: `【人】${D.career_people.value} | 【事】${D.career_incident.value || '無'} | 【焦點】${D.career_next_focus.value}`,
+              health_status: `運動:${D.sport_execution.value} | 保養:${D.beauty_routine.value}`,
+              wealth_evidence: D.wealth_evidence.value,
+              invest_practice: D.invest_practice.value,
+              declutter_item: `${D.declutter_item.value} (${D.declutter_area.value})`,
               score: updateProgress() + "%",
               note: `${document.getElementById('j_q89').value} | 感受:${document.getElementById('j_q91').value}`, 
               streak: "Day 1"
             };
-
-            var q99Val = document.getElementById('j_q99').value;
 
             var journalData = {
                 journalType: 'end',
@@ -1051,11 +1070,10 @@
                 q96: document.getElementById('j_q96').value,
                 q97: document.getElementById('j_q97').value,
                 q98: document.getElementById('j_q98').value,
-                q99: q99Val 
+                q99: document.getElementById('j_q99').value 
             };
 
             btn.innerText = "寫入中...";
-            
             pushToFirebaseQueue('daily_routine', routineData, null, () => {
                 pushToFirebaseQueue('journal', journalData, "一日總結已歸檔！", () => {
                     closeJournalModal(type); 
@@ -1063,13 +1081,10 @@
                     btn.innerText = "提交一日總結";
                     document.getElementById('modal-end').querySelectorAll('input[type="text"], textarea').forEach(el => el.value = "");
                     
-                    document.getElementById('sport_execution').value = "";
-                    document.getElementById('beauty_routine').value = "";
+                    if(D.sport_execution) D.sport_execution.value = "";
+                    if(D.beauty_routine) D.beauty_routine.value = "";
                     
                     document.getElementById('modal-end').querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
-                    document.getElementById('beauty_routine').selectedIndex = 0;
-                    document.getElementById('sport_execution').selectedIndex = 0;
-                    
                     document.querySelectorAll('.muji-chip input').forEach(el => el.checked = false);
                     
                     updateProgress();
@@ -1078,12 +1093,8 @@
         }
       }
       
-      function resetGoalForm() {
-      }
-
       function submitStock() { 
-        var btn = document.querySelector('#form-swing .btn-muji'); 
-        btn.disabled = true;
+        var btn = document.querySelector('#form-swing .btn-muji'); btn.disabled = true;
         var action = document.getElementById('s_action').value;
         var reason = document.getElementById('s_reason').value;
         
@@ -1113,15 +1124,13 @@
             backToSelection(); 
             document.getElementById('stockForm').reset();
             btn.disabled = false; 
-            var today = new Date();
-            if(document.getElementById('s_date')) document.getElementById('s_date').valueAsDate = today;
+            if(document.getElementById('s_date')) document.getElementById('s_date').value = getLocalISOString();
             if(document.getElementById('s_action')) updateReasonOptions();
         }); 
       }
       
       function submitDayTrade() { 
-        var btn = document.querySelector('#form-daytrade .btn-muji'); 
-        btn.disabled = true;
+        var btn = document.querySelector('#form-daytrade .btn-muji'); btn.disabled = true;
         var formData = {
             date: document.getElementById('d_date').value,
             code: document.getElementById('d_code').value,
@@ -1145,11 +1154,11 @@
             backToSelection(); 
             document.getElementById('dayTradeForm').reset();
             btn.disabled = false; 
-            var today = new Date();
-            if(document.getElementById('d_date')) document.getElementById('d_date').valueAsDate = today;
+            if(document.getElementById('d_date')) document.getElementById('d_date').value = getLocalISOString();
             updateDayTradeReason();
         }); 
       }
+
       function triggerManualSync() {
           loadDashboardFromFirebase();
           showToast("正在重新整理資料...");
@@ -1157,25 +1166,75 @@
               google.script.run.syncDashboardToFirebase();
           }
       }
-      function switchTab(tabId) { var contents = document.getElementsByClassName('tab-content'); for (var i = 0; i < contents.length; i++) contents[i].classList.remove('active'); var navs = document.getElementsByClassName('nav-btn'); for (var j = 0; j < navs.length; j++) navs[j].classList.remove('active'); document.getElementById(tabId).classList.add('active'); var navId = 'nav-' + tabId.replace('tab-', ''); if(document.getElementById(navId)) document.getElementById(navId).classList.add('active'); if (tabId === 'tab-operation') { backToSelection(); var today = new Date(); if(!document.getElementById('s_date').value) document.getElementById('s_date').valueAsDate = today; if(!document.getElementById('d_date').value) document.getElementById('d_date').valueAsDate = today; } }
+
+      function switchTab(tabId) { 
+          var contents = document.getElementsByClassName('tab-content'); 
+          for (var i = 0; i < contents.length; i++) contents[i].classList.remove('active'); 
+          var navs = document.getElementsByClassName('nav-btn'); 
+          for (var j = 0; j < navs.length; j++) navs[j].classList.remove('active'); 
+          document.getElementById(tabId).classList.add('active'); 
+          var navId = 'nav-' + tabId.replace('tab-', ''); 
+          if(document.getElementById(navId)) document.getElementById(navId).classList.add('active'); 
+          if (tabId === 'tab-operation') { 
+              backToSelection(); 
+              if(!document.getElementById('s_date').value) document.getElementById('s_date').value = getLocalISOString(); 
+              if(!document.getElementById('d_date').value) document.getElementById('d_date').value = getLocalISOString(); 
+          } 
+      }
       function selectMode(mode) { document.getElementById('op-selection').classList.add('hidden'); if (mode === 'swing') document.getElementById('form-swing').classList.remove('hidden'); else document.getElementById('form-daytrade').classList.remove('hidden'); }
       function backToSelection() { document.getElementById('op-selection').classList.remove('hidden'); document.getElementById('form-swing').classList.add('hidden'); document.getElementById('form-daytrade').classList.add('hidden'); }
-      function updateDate() { var now = new Date(); document.getElementById('header-date').innerText = (now.getMonth()+1) + '/' + now.getDate(); document.getElementById('header-day').innerText = ['週日','週一','週二','週三','週四','週五','週六'][now.getDay()]; }
-      function getWeather() { fetch("https://api.open-meteo.com/v1/forecast?latitude=25.033&longitude=121.565&current_weather=true").then(r => r.json()).then(data => { var code = data.current_weather.weathercode; var icon = (code > 3) ? (code > 50 ? "grain" : "cloud") : "wb_sunny"; document.getElementById('weather-display').innerHTML = `<span class="material-icons-round">${icon}</span> ${Math.round(data.current_weather.temperature)}°C`; }).catch(e => { document.getElementById('weather-display').innerText = "--"; }); }
+      function updateDate() { 
+          var now = getAdjustedNow(); 
+          if(D['header-date']) D['header-date'].innerText = (now.getMonth()+1) + '/' + now.getDate(); 
+          if(D['header-day']) D['header-day'].innerText = ['週日','週一','週二','週三','週四','週五','週六'][now.getDay()]; 
+      }
+      
+      // --- API 快取機制：天氣 API (2小時 TTL) ---
+      function getWeatherWithCache() { 
+          const cacheKey = 'weatherCache';
+          const cachedStr = localStorage.getItem(cacheKey);
+          
+          if (cachedStr) {
+              try {
+                  const cacheData = JSON.parse(cachedStr);
+                  if (new Date().getTime() < cacheData.expiry) {
+                      renderWeather(cacheData.data);
+                      return;
+                  }
+              } catch (e) {}
+          }
+
+          fetch("https://api.open-meteo.com/v1/forecast?latitude=25.033&longitude=121.565&current_weather=true")
+          .then(r => r.json())
+          .then(data => { 
+              const expiryTime = new Date().getTime() + (2 * 60 * 60 * 1000); // 2小時 TTL
+              localStorage.setItem(cacheKey, JSON.stringify({ expiry: expiryTime, data: data }));
+              renderWeather(data);
+          })
+          .catch(e => { if(D['weather-display']) D['weather-display'].innerText = "--"; }); 
+      }
+
+      function renderWeather(data) {
+          if (!D['weather-display']) return;
+          var code = data.current_weather.weathercode; 
+          var icon = (code > 3) ? (code > 50 ? "grain" : "cloud") : "wb_sunny"; 
+          D['weather-display'].innerHTML = `<span class="material-icons-round">${icon}</span> ${Math.round(data.current_weather.temperature)}°C`;
+      }
+
       function openModal() { document.getElementById('expense-modal').classList.add('active'); }
       function closeModal() { document.getElementById('expense-modal').classList.remove('active'); }
       function openJournalModal(type) { 
           document.getElementById('modal-' + type).classList.add('active'); 
-          if(type === 'end') { 
-              updateProgress();
-          } 
+          if(type === 'end') { updateProgress(); } 
       }
       function closeJournalModal(type) { document.getElementById('modal-' + type).classList.remove('active'); }
       function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.opacity = 1; setTimeout(() => t.style.opacity = 0, 2000); }
       function toggleSplitOptions() { var isSplit = document.getElementById('isSplit').checked; document.getElementById('split-section').style.display = isSplit ? 'block' : 'none'; }
       function toggleSplitInputs() { var method = document.getElementById('splitMethod').value; document.getElementById('input-pan-part').style.display = method === '潘部分' ? 'block' : 'none'; document.getElementById('input-others').style.display = method === '他人' ? 'block' : 'none'; document.getElementById('input-chuan-pay').style.display = 'block'; }
+      
       function updateReasonOptions() { var action = document.getElementById('s_action').value; var reasonSelect = document.getElementById('s_reason'); var label = document.getElementById('reasonLabel'); reasonSelect.innerHTML = ""; if (action === "進場") { label.innerText = "進場條件"; ["多頭確認", "空頭確認", "回後買上漲(過昨高)", "彈後空下跌(破昨低)", "盤整突破", "盤整跌破", "型態確認", "搶V轉"].forEach(o => { var op = document.createElement("option"); op.value = o; op.innerText = o; reasonSelect.appendChild(op); }); } else { label.innerText = "出場原因"; ["停利", "停損", "遇壓", "遇撐"].forEach(o => { var op = document.createElement("option"); op.value = o; op.innerText = o; reasonSelect.appendChild(op); }); } }
       function updateDayTradeReason() { var trend = document.getElementById('d_trend').value; var reasonSelect = document.getElementById('d_reason'); reasonSelect.innerHTML = ""; var options = (trend === "多") ? ["急漲", "第2或3個頭頭高", "回檔遇支撐", "K線橫盤", "突破長期下降切線", "突破上升軌道線", "強覆蓋>覆蓋>吞噬>遭遇", "母子懷抱", "覆蓋變夾擊", "一星二陽"] : ["急跌", "第2或3個頭頭低", "上漲遇壓", "反彈遇壓", "K線橫盤", "跌破長期上升切線", "跌破下降軌道線", "強覆蓋>覆蓋>吞噬>遭遇", "母子懷抱", "覆蓋變夾擊", "一星二陰"]; options.forEach(o => { var op = document.createElement("option"); op.value = o; op.innerText = o; reasonSelect.appendChild(op); }); }
+      
       function renderTable(data, tableId) {
         var table = document.getElementById(tableId); if(!table) return; table.innerHTML = ''; 
         if (!data || data.length === 0) { table.innerHTML = '<tr><td>無資料</td></tr>'; return; }
@@ -1196,6 +1255,7 @@
         });
         if (isProfitTable) applyProfitTableColoring(table);
       }
+      
       function applyProfitTableColoring(table) {
           var rows = table.getElementsByTagName('tr'); var priceRowIndex = -1; var percentRowIndex = -1;
           for (var i = 0; i < rows.length; i++) { var headerText = rows[i].cells[0] ? rows[i].cells[0].innerText.trim() : ""; if (headerText === '現價') priceRowIndex = i; if (headerText === '%') percentRowIndex = i; }
@@ -1213,12 +1273,7 @@
           document.getElementById('image-viewer-modal').classList.add('active');
           const img = document.getElementById('zoomed-image');
           if (!pz) {
-              pz = panzoom(img, {
-                  maxZoom: 5,
-                  minZoom: 1,
-                  bounds: true,
-                  boundsPadding: 0.1
-              });
+              pz = panzoom(img, { maxZoom: 5, minZoom: 1, bounds: true, boundsPadding: 0.1 });
           } else {
               pz.zoomAbs(0, 0, 1);
               pz.moveTo(0, 0);
@@ -1226,13 +1281,9 @@
       }
       
       function closeImageViewer(e, force) {
-          // 點擊背景、外框、或點選強制關閉鈕時才關閉，避免縮放時誤觸
           if (force || e.target.id === 'image-viewer-modal' || e.target.id === 'pz-wrapper') {
               document.getElementById('image-viewer-modal').classList.remove('active');
-              if (pz) {
-                  pz.zoomAbs(0, 0, 1); // 復原比例
-                  pz.moveTo(0, 0);     // 復原位置
-              }
+              if (pz) { pz.zoomAbs(0, 0, 1); pz.moveTo(0, 0); }
           }
       }
     </script>
