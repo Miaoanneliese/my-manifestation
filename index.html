@@ -96,6 +96,28 @@
       .btn-mini-muji { padding: 6px 14px; background: #fff; border: 1px solid #d0d0d0; color: #777; font-size: 0.8rem; border-radius: 2px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; font-weight: 500; letter-spacing: 1px; }
       .btn-mini-muji:active, .btn-mini-muji:hover { background: #fafafa; border-color: var(--accent-brown); color: var(--accent-brown); }
       
+      /* Flomo 式輸入區塊 */
+      .flomo-input-wrapper { border: 1px solid var(--border-color); border-radius: 4px; background: #fafafa; display: flex; flex-direction: column; margin-top: 10px; transition: border-color 0.3s; }
+      .flomo-input-wrapper:focus-within { border-color: var(--accent-brown); }
+      .flomo-textarea { border: none; background: transparent; padding: 12px; font-size: 0.95rem; resize: none; outline: none; height: 48px; overflow-y: hidden; color: var(--text-main); font-family: inherit; line-height: 1.6; }
+      .flomo-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-top: 1px solid var(--border-color); background: #fff; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
+      .flomo-tools { display: flex; gap: 15px; align-items: center; }
+      .flomo-tool-btn { color: #888; cursor: pointer; font-size: 20px; transition: color 0.2s; user-select: none; }
+      .flomo-tool-btn:active, .flomo-tool-btn:hover { color: var(--text-main); }
+      .flomo-send-btn { background: var(--btn-green); color: white; border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
+      .flomo-send-btn:active { transform: scale(0.9); }
+      .flomo-send-btn .material-icons-round { font-size: 18px; margin-left: 2px; }
+      .flomo-tag-tray { display: none; padding: 8px 12px; border-top: 1px dashed var(--border-color); background: #fafafa; gap: 8px; flex-wrap: wrap; }
+      .flomo-tag-tray.active { display: flex; }
+      .flomo-tag-btn { background: #e0deda; color: #4a4a4a; font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
+      .flomo-tag-btn:active { background: #d0ceca; }
+
+      /* 卡片式讀書筆記 */
+      #reading-notes-list { list-style: none; padding: 0; margin: 0 0 12px 0; display: flex; flex-direction: column; gap: 10px; }
+      #reading-notes-list li { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; align-items: flex-start; box-shadow: 0 1px 3px rgba(0,0,0,0.02); white-space: normal; }
+      #reading-notes-list li .date { color: var(--accent-brown); font-size: 0.75rem; margin-bottom: 6px; font-family: 'Noto Sans TC', sans-serif; font-weight: 500; letter-spacing: 0.5px; }
+      #reading-notes-list li .content { color: var(--text-main); font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
+
       #mini-gratitude-list { list-style: none; padding: 0; margin: 0 0 8px 0; display: flex; flex-direction: column; overflow: hidden; }
       #mini-gratitude-list li { font-size: 0.85rem; color: #666; padding: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.6; display: flex; align-items: center; }
       #mini-gratitude-list li .date { color: var(--accent-brown); font-size: 0.75rem; margin-right: 8px; font-family: 'Noto Sans TC', sans-serif; min-width: 40px; letter-spacing: 0.5px; font-weight: 500; }
@@ -122,11 +144,7 @@
           transition: color 0.2s;
       }
       .cal-title-wrapper:active { color: #000; }
-      .cal-title-wrapper.expanded {
-          white-space: normal;
-          overflow: visible;
-          word-break: break-all;
-      }
+      .cal-title-wrapper.expanded { white-space: normal; overflow: visible; word-break: break-all; }
       
       .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #ddd; border-radius: 4px; }
       .table-wrapper.scrollable { max-height: 300px; } .table-wrapper.auto-height { max-height: none; overflow-y: visible; height: 100%; }
@@ -316,6 +334,33 @@
                     <div class="gratitude-compact">
                         <input type="text" id="journal-text" class="input-underline" placeholder="隨手記錄...">
                         <button type="button" class="btn-mini-muji" onclick="submitGratitude()">感謝</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 讀書筆記區塊 (Flomo 式) -->
+            <div class="muji-card grid-full-width" style="padding: 12px 15px; display: flex; flex-direction: column; background: #f2f2f2; border: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div class="card-label" style="margin-bottom: 0;">讀書筆記回顧</div>
+                    <a href="https://docs.google.com/spreadsheets/d/14ezIQwSe6rpl7iPVYL80RKpAB_N-xqaZ-oiXZHqn_nY/edit?gid=1625918142#gid=1625918142" target="_blank" style="font-size: 0.75rem; color: var(--accent-brown); text-decoration: none; display: flex; align-items: center; gap: 4px; font-weight: 500;">
+                        <span class="material-icons-round" style="font-size: 14px;">open_in_new</span> 進入檔案
+                    </a>
+                </div>
+                
+                <ul id="reading-notes-list"><li>讀取中...</li></ul>
+                
+                <div class="flomo-input-wrapper">
+                    <textarea id="reading-note-text" class="flomo-textarea" placeholder="現在的想法是..."></textarea>
+                    <div id="flomo-tag-tray" class="flomo-tag-tray"></div>
+                    <div class="flomo-toolbar">
+                        <div class="flomo-tools">
+                            <span class="material-icons-round flomo-tool-btn" onclick="toggleTagTray()">tag</span>
+                            <span class="material-icons-round flomo-tool-btn" onclick="insertFlomoFormat('**', '**')">format_bold</span>
+                            <span class="material-icons-round flomo-tool-btn" onclick="insertFlomoText('\n- ')">format_list_bulleted</span>
+                        </div>
+                        <button type="button" class="flomo-send-btn" onclick="submitReadingNote()">
+                            <span class="material-icons-round">send</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -568,25 +613,23 @@
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       const db = firebase.database();
 
-      // DOM Cache 物件，減少 document.getElementById 調用次數
       const D = {};
 
       function initDOMCache() {
           const ids = ['header-date', 'header-day', 'weather-display', 'today-expense', 'month-expense', 'daily-quote', 'goal-display', 
-                       'table-invest-calc', 'table-profit', 'expense-ratio-container', 'calendar-list', 'mini-gratitude-list', 'list-manifestation',
+                       'table-invest-calc', 'table-profit', 'expense-ratio-container', 'calendar-list', 'mini-gratitude-list', 'reading-notes-list', 'list-manifestation',
                        'cycle-id', 'goal-year', 'goal-season', 'goal-weekly', 'cycle-range-display', 'goal-career', 'goal-health', 'goal-wealth', 
                        'goal-skills', 'goal-life', 'cycle-rate', 'is_recording_day', 'daily-progress-bar', 'progress-text', 'career_people', 
                        'career_incident', 'career_next_focus', 'sport_execution', 'beauty_routine', 'wealth_evidence', 'invest_practice', 
-                       'declutter_item', 'declutter_area', 'j_q86', 'j_q87', 'j_q88', 'j_q90', 'check_duolingo', 'check_speak', 'check_reading'];
+                       'declutter_item', 'declutter_area', 'j_q86', 'j_q87', 'j_q88', 'j_q90', 'check_duolingo', 'check_speak', 'check_reading',
+                       'reading-note-text'];
           ids.forEach(id => {
               D[id] = document.getElementById(id);
           });
       }
 
-      // --- 核心時區校準 (The 3:30 AM Cycle) ---
       function getAdjustedNow() {
           const now = new Date();
-          // 若時間在凌晨 00:00 到 03:29 之間，視為「昨天」
           if (now.getHours() < 3 || (now.getHours() === 3 && now.getMinutes() < 30)) {
               return new Date(now.getTime() - 24 * 60 * 60 * 1000);
           }
@@ -602,7 +645,7 @@
       }
 
       function getLocalFullTimestamp() {
-          const now = new Date(); // 實際打卡時間點保留真實時間，但日期歸屬交由 ISOString
+          const now = new Date(); 
           const year = now.getFullYear();
           const month = (now.getMonth() + 1).toString().padStart(2, '0');
           const day = now.getDate().toString().padStart(2, '0');
@@ -638,7 +681,6 @@
         if(document.getElementById('d_trend')) updateDayTradeReason();
         
         document.querySelectorAll('#modal-end input, #modal-end select, #modal-end textarea').forEach(el => {
-            // 綁定輸入監聽，動態更新進度條
             el.addEventListener('input', updateProgress);
             el.addEventListener('change', updateProgress);
         });
@@ -647,22 +689,32 @@
             D.is_recording_day.addEventListener('change', autoSelectRoutine);
         }
         
+        // 綁定輸入框自適應高度
+        if (D['reading-note-text']) {
+            D['reading-note-text'].addEventListener('input', autoResizeTextarea);
+        }
+        
         document.addEventListener('contextmenu', event => event.preventDefault());
       };
 
-      // 改為凌晨 03:30 刷新
+      function autoResizeTextarea(e) {
+          var target = e.target || e;
+          target.style.height = 'auto';
+          target.style.height = (target.scrollHeight) + 'px';
+      }
+
       function setupMidnightRefresh() {
           const now = new Date();
           let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 3, 30, 0);
           if (now.getTime() >= target.getTime()) {
-              target.setDate(target.getDate() + 1); // 如果已經超過今天的 3:30，設定為明天的 3:30
+              target.setDate(target.getDate() + 1); 
           }
           const msToTarget = target.getTime() - now.getTime();
 
           setTimeout(function() {
               updateDate(); 
               loadDashboardFromFirebase(); 
-              fetchCurrentMissionWithCache(true); // 強制刷新目標
+              fetchCurrentMissionWithCache(true); 
               setupMidnightRefresh(); 
           }, msToTarget);
       }
@@ -694,7 +746,6 @@
         updateProgress();
       }
 
-      // --- API 快取機制：週期目標 (GAS) ---
       function fetchCurrentMissionWithCache(forceRefresh = false) {
         if(GAS_URL.includes("你的_SCRIPT_ID")) return;
         const cacheKey = 'missionCache';
@@ -703,18 +754,17 @@
         if (!forceRefresh && cachedStr) {
             try {
                 const cacheData = JSON.parse(cachedStr);
-                // 檢查是否過期 (設定 12 小時)
                 if (new Date().getTime() < cacheData.expiry) {
                     renderMissionData(cacheData.data);
                     return;
                 }
-            } catch (e) { /* 解析失敗則重新獲取 */ }
+            } catch (e) { }
         }
 
         fetch(GAS_URL + "?action=getMission") 
         .then(response => response.json())
         .then(data => {
-            const expiryTime = new Date().getTime() + (12 * 60 * 60 * 1000); // 12小時 TTL
+            const expiryTime = new Date().getTime() + (12 * 60 * 60 * 1000); 
             localStorage.setItem(cacheKey, JSON.stringify({ expiry: expiryTime, data: data }));
             renderMissionData(data);
         })
@@ -796,7 +846,6 @@
          });
       }
 
-      // --- DOM 快取效能優化 (取代 getElementById 暴力掃描) ---
       function updateProgress() {
         if (!D.is_recording_day) return;
         const isRecording = D.is_recording_day.checked;
@@ -832,7 +881,6 @@
         return percent;
       }
       
-      // 防抖函數 (Debounce)
       function debounce(func, delay) {
           let timeoutId;
           return function(...args) {
@@ -844,7 +892,6 @@
       function setupDashboardListener() {
         loadDashboardFromFirebase(); 
         
-        // 降低 Firebase on value 觸發頻率，防抖 1 秒
         const debouncedLoad = debounce(() => { loadDashboardFromFirebase(); }, 1000);
         db.ref('system/lastUpdate').on('value', (snapshot) => {
             if(snapshot.val()) {
@@ -866,6 +913,11 @@
         }).catch((error) => {
             if(D['daily-quote']) D['daily-quote'].innerText = "讀取失敗";
         });
+      }
+
+      function toggleTagTray() {
+          var tray = document.getElementById('flomo-tag-tray');
+          if(tray) tray.classList.toggle('active');
       }
 
       function renderDashboard(data) {
@@ -964,6 +1016,66 @@
                     });
                 }
             }
+            
+            var readingList = D['reading-notes-list'];
+            var tagTray = document.getElementById('flomo-tag-tray');
+            var allTags = {};
+
+            if (readingList) {
+                readingList.innerHTML = '';
+                if (!data.readingNotes || Object.keys(data.readingNotes).length === 0) {
+                    readingList.innerHTML = '<li style="color:#ccc; text-align:center;">無資料</li>';
+                } else {
+                    var rListArray = Array.isArray(data.readingNotes) ? data.readingNotes : Object.values(data.readingNotes);
+                    
+                    // 擷取所有使用過的 hashtag
+                    rListArray.forEach(item => {
+                        if (item.content) {
+                            var matches = item.content.match(/#[\w\u4e00-\u9fa5]+/g);
+                            if (matches) {
+                                matches.forEach(tag => {
+                                    allTags[tag] = (allTags[tag] || 0) + 1;
+                                });
+                            }
+                        }
+                    });
+
+                    // 隨機抽選 6 條
+                    var shuffled = [...rListArray].sort(() => 0.5 - Math.random());
+                    var rRandomItems = shuffled.slice(0, 6);
+
+                    rRandomItems.forEach(item => {
+                        var li = document.createElement('li');
+                        var shortDate = (item.date && item.date.length >= 5) ? item.date.substring(5) : item.date;
+                        
+                        // 簡單的 Markdown 解析：粗體與清單
+                        let formattedContent = item.content || "";
+                        formattedContent = formattedContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        formattedContent = formattedContent.replace(/^- (.*)/gm, '• $1');
+
+                        li.innerHTML = `<span class="date">${shortDate}</span> <div class="content">${formattedContent}</div>`;
+                        readingList.appendChild(li);
+                    });
+                }
+
+                // 渲染常用的標籤面板
+                if (tagTray) {
+                    tagTray.innerHTML = '';
+                    var sortedTags = Object.keys(allTags).sort((a, b) => allTags[b] - allTags[a]).slice(0, 8); // 取前 8 個
+                    if (sortedTags.length > 0) {
+                        sortedTags.forEach(tag => {
+                            var span = document.createElement('span');
+                            span.className = 'flomo-tag-btn';
+                            span.innerText = tag;
+                            span.onclick = function() { insertFlomoText(tag + ' '); };
+                            tagTray.appendChild(span);
+                        });
+                    } else {
+                        tagTray.innerHTML = '<span style="color:#ccc; font-size: 0.8rem;">暫無常用標籤</span>';
+                    }
+                }
+            }
+            
             var maniList = D['list-manifestation'];
             if (maniList) {
                 maniList.innerHTML = '';
@@ -1016,6 +1128,48 @@
         var content = document.getElementById('journal-text').value; 
         var today = getLocalISOString();
         pushToFirebaseQueue('journal', { journalType: 'gratitude', content: content, date: today }, "已保存", () => { document.getElementById('journal-text').value = ""; btn.disabled = false; }); 
+      }
+      
+      function submitReadingNote() {
+        var btn = document.querySelector('.flomo-send-btn'); btn.disabled = true;
+        var el = document.getElementById('reading-note-text');
+        var content = el.value;
+        var today = getLocalISOString();
+        if(!content) { btn.disabled = false; return; }
+        pushToFirebaseQueue('journal', { journalType: 'reading_note', content: content, date: today }, "筆記已保存", () => { 
+            el.value = ""; 
+            el.style.height = '48px'; // 復原高度
+            btn.disabled = false; 
+        });
+      }
+
+      function insertFlomoText(text) {
+          const el = document.getElementById('reading-note-text');
+          const start = el.selectionStart;
+          const end = el.selectionEnd;
+          const textBefore = el.value.substring(0, start);
+          const textAfter  = el.value.substring(end, el.value.length);
+          el.value = textBefore + text + textAfter;
+          el.selectionStart = el.selectionEnd = start + text.length;
+          el.focus();
+          autoResizeTextarea({target: el});
+      }
+
+      function insertFlomoFormat(prefix, suffix) {
+          const el = document.getElementById('reading-note-text');
+          const start = el.selectionStart;
+          const end = el.selectionEnd;
+          const selectedText = el.value.substring(start, end);
+          const textBefore = el.value.substring(0, start);
+          const textAfter  = el.value.substring(end, el.value.length);
+          el.value = textBefore + prefix + selectedText + suffix + textAfter;
+          if (selectedText.length === 0) {
+              el.selectionStart = el.selectionEnd = start + prefix.length;
+          } else {
+              el.selectionStart = el.selectionEnd = start + prefix.length + selectedText.length + suffix.length;
+          }
+          el.focus();
+          autoResizeTextarea({target: el});
       }
       
       function submitJournalPart(type) { 
@@ -1189,7 +1343,6 @@
           if(D['header-day']) D['header-day'].innerText = ['週日','週一','週二','週三','週四','週五','週六'][now.getDay()]; 
       }
       
-      // --- API 快取機制：天氣 API (2小時 TTL) ---
       function getWeatherWithCache() { 
           const cacheKey = 'weatherCache';
           const cachedStr = localStorage.getItem(cacheKey);
@@ -1207,7 +1360,7 @@
           fetch("https://api.open-meteo.com/v1/forecast?latitude=25.033&longitude=121.565&current_weather=true")
           .then(r => r.json())
           .then(data => { 
-              const expiryTime = new Date().getTime() + (2 * 60 * 60 * 1000); // 2小時 TTL
+              const expiryTime = new Date().getTime() + (2 * 60 * 60 * 1000);
               localStorage.setItem(cacheKey, JSON.stringify({ expiry: expiryTime, data: data }));
               renderWeather(data);
           })
