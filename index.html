@@ -96,10 +96,9 @@
       .btn-mini-muji { padding: 6px 14px; background: #fff; border: 1px solid #d0d0d0; color: #777; font-size: 0.8rem; border-radius: 2px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; font-weight: 500; letter-spacing: 1px; }
       .btn-mini-muji:active, .btn-mini-muji:hover { background: #fafafa; border-color: var(--accent-brown); color: var(--accent-brown); }
       
-      /* Flomo 式輸入區塊 */
       .flomo-input-wrapper { border: 1px solid var(--border-color); border-radius: 4px; background: #fafafa; display: flex; flex-direction: column; margin-top: 10px; transition: border-color 0.3s; }
       .flomo-input-wrapper:focus-within { border-color: var(--accent-brown); }
-      .flomo-textarea { border: none; background: transparent; padding: 12px; font-size: 0.95rem; resize: none; outline: none; height: 48px; overflow-y: hidden; color: var(--text-main); font-family: inherit; line-height: 1.6; }
+      .flomo-textarea { border: none; background: transparent; padding: 8px 12px; font-size: 0.95rem; resize: none; outline: none; height: 40px; overflow-y: hidden; color: var(--text-main); font-family: inherit; line-height: 1.5; }
       .flomo-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-top: 1px solid var(--border-color); background: #fff; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
       .flomo-tools { display: flex; gap: 15px; align-items: center; }
       .flomo-tool-btn { color: #888; cursor: pointer; font-size: 20px; transition: color 0.2s; user-select: none; }
@@ -112,11 +111,82 @@
       .flomo-tag-btn { background: #e0deda; color: #4a4a4a; font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
       .flomo-tag-btn:active { background: #d0ceca; }
 
-      /* 卡片式讀書筆記 */
-      #reading-notes-list { list-style: none; padding: 0; margin: 0 0 12px 0; display: flex; flex-direction: column; gap: 10px; }
-      #reading-notes-list li { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; align-items: flex-start; box-shadow: 0 1px 3px rgba(0,0,0,0.02); white-space: normal; }
-      #reading-notes-list li .date { color: var(--accent-brown); font-size: 0.75rem; margin-bottom: 6px; font-family: 'Noto Sans TC', sans-serif; font-weight: 500; letter-spacing: 0.5px; }
-      #reading-notes-list li .content { color: var(--text-main); font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
+      /* 卡片式讀書筆記: 散落感卡片設計 */
+      #reading-notes-list { 
+          list-style: none; 
+          padding: 8px 4px; 
+          margin: 0 0 15px 0; 
+          display: grid; 
+          grid-template-columns: repeat(3, 1fr); 
+          gap: 12px; 
+      }
+      #reading-notes-list li { 
+          background: #fff; 
+          border: 1px solid #eaeaea; 
+          border-radius: 3px; 
+          padding: 8px; 
+          display: flex; 
+          flex-direction: column; 
+          box-shadow: 2px 3px 6px rgba(0,0,0,0.06); 
+          height: 78px; /* 修改為容納約兩行文字的高度 */
+          overflow: hidden;
+          
+          /* 隨機旋轉與位移 (變數由 JS 注入) */
+          transform: translate(var(--tx, 0), var(--ty, 0)) rotate(var(--rot, 0deg));
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          position: relative;
+          cursor: pointer;
+          z-index: 1;
+      }
+      /* Hover 或 Active 時卡片浮起、轉正、放大 */
+      #reading-notes-list li:hover, #reading-notes-list li:active {
+          transform: scale(1.08) translate(0, 0) rotate(0deg);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+          z-index: 10;
+          border-color: #dcdcdc;
+      }
+      
+      .reading-card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 4px;
+          flex-shrink: 0;
+          width: 100%;
+      }
+      
+      #reading-notes-list li .date { 
+          color: var(--accent-brown); 
+          font-size: 0.65rem; 
+          font-family: 'Noto Sans TC', sans-serif; 
+          font-weight: 500; 
+          letter-spacing: 0px; 
+          margin: 0;
+      }
+      #reading-notes-list li .content { 
+          color: var(--text-main); 
+          font-size: 0.75rem; 
+          line-height: 1.5; 
+          flex: 1; 
+          overflow-y: auto; 
+          word-break: break-word; 
+          display: block; 
+          white-space: pre-wrap; /* 新增: 保留空格與換行排版 */
+          scrollbar-width: none; 
+      }
+      #reading-notes-list li .content::-webkit-scrollbar { display: none; }
+      
+      .flomo-tag-display { 
+          font-size: 0.65rem; 
+          color: #a0a0a0; 
+          text-align: right;
+          max-width: 60%;
+          white-space: nowrap; 
+          overflow: hidden; 
+          text-overflow: ellipsis; 
+          font-weight: 500;
+          margin: 0;
+      }
 
       #mini-gratitude-list { list-style: none; padding: 0; margin: 0 0 8px 0; display: flex; flex-direction: column; overflow: hidden; }
       #mini-gratitude-list li { font-size: 0.85rem; color: #666; padding: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.6; display: flex; align-items: center; }
@@ -338,7 +408,7 @@
                 </div>
             </div>
 
-            <!-- 讀書筆記區塊 (Flomo 式) -->
+            <!-- 讀書筆記區塊 -->
             <div class="muji-card grid-full-width" style="padding: 12px 15px; display: flex; flex-direction: column; background: #f2f2f2; border: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                     <div class="card-label" style="margin-bottom: 0;">讀書筆記回顧</div>
@@ -689,7 +759,6 @@
             D.is_recording_day.addEventListener('change', autoSelectRoutine);
         }
         
-        // 綁定輸入框自適應高度
         if (D['reading-note-text']) {
             D['reading-note-text'].addEventListener('input', autoResizeTextarea);
         }
@@ -1028,10 +1097,11 @@
                 } else {
                     var rListArray = Array.isArray(data.readingNotes) ? data.readingNotes : Object.values(data.readingNotes);
                     
-                    // 擷取所有使用過的 hashtag
                     rListArray.forEach(item => {
-                        if (item.content) {
-                            var matches = item.content.match(/#[\w\u4e00-\u9fa5]+/g);
+                        let rawContent = item.content || "";
+                        let tagsStr = item.tag || (rawContent.match(/#[\w\u4e00-\u9fa5]+/g) || []).join(' ');
+                        if (tagsStr) {
+                            var matches = tagsStr.match(/#[\w\u4e00-\u9fa5]+/g);
                             if (matches) {
                                 matches.forEach(tag => {
                                     allTags[tag] = (allTags[tag] || 0) + 1;
@@ -1040,28 +1110,48 @@
                         }
                     });
 
-                    // 隨機抽選 6 條
-                    var shuffled = [...rListArray].sort(() => 0.5 - Math.random());
-                    var rRandomItems = shuffled.slice(0, 6);
+                    var rRandomItems = [];
+                    if (rListArray.length > 0) {
+                        var pinnedItem = rListArray[0];
+                        var restItems = rListArray.slice(1);
+                        var shuffledRest = restItems.sort(() => 0.5 - Math.random());
+                        rRandomItems = [pinnedItem, ...shuffledRest.slice(0, 5)];
+                    }
 
                     rRandomItems.forEach(item => {
                         var li = document.createElement('li');
+                        
+                        let rot = (Math.random() - 0.5) * 6;
+                        let tx = (Math.random() - 0.5) * 8;
+                        let ty = (Math.random() - 0.5) * 8;
+                        li.style.setProperty('--rot', rot + 'deg');
+                        li.style.setProperty('--tx', tx + 'px');
+                        li.style.setProperty('--ty', ty + 'px');
+
                         var shortDate = (item.date && item.date.length >= 5) ? item.date.substring(5) : item.date;
                         
-                        // 簡單的 Markdown 解析：粗體與清單
-                        let formattedContent = item.content || "";
+                        let rawContent = item.content || "";
+                        let tagsStr = item.tag || (rawContent.match(/#[\w\u4e00-\u9fa5]+/g) || []).join(' ');
+                        let tagsHtml = tagsStr ? `<div class="flomo-tag-display">${tagsStr}</div>` : '<div class="flomo-tag-display"></div>';
+                        
+                        let formattedContent = rawContent.replace(/#[\w\u4e00-\u9fa5]+/g, '').trim();
                         formattedContent = formattedContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                         formattedContent = formattedContent.replace(/^- (.*)/gm, '• $1');
 
-                        li.innerHTML = `<span class="date">${shortDate}</span> <div class="content">${formattedContent}</div>`;
+                        li.innerHTML = `
+                            <div class="reading-card-header">
+                                <span class="date">${shortDate}</span>
+                                ${tagsHtml}
+                            </div>
+                            <div class="content">${formattedContent}</div>
+                        `;
                         readingList.appendChild(li);
                     });
                 }
 
-                // 渲染常用的標籤面板
                 if (tagTray) {
                     tagTray.innerHTML = '';
-                    var sortedTags = Object.keys(allTags).sort((a, b) => allTags[b] - allTags[a]).slice(0, 8); // 取前 8 個
+                    var sortedTags = Object.keys(allTags).sort((a, b) => allTags[b] - allTags[a]).slice(0, 8); 
                     if (sortedTags.length > 0) {
                         sortedTags.forEach(tag => {
                             var span = document.createElement('span');
@@ -1138,7 +1228,7 @@
         if(!content) { btn.disabled = false; return; }
         pushToFirebaseQueue('journal', { journalType: 'reading_note', content: content, date: today }, "筆記已保存", () => { 
             el.value = ""; 
-            el.style.height = '48px'; // 復原高度
+            el.style.height = '40px'; 
             btn.disabled = false; 
         });
       }
