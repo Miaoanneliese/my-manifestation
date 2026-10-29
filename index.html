@@ -86,16 +86,18 @@
       .btn-icon span { font-size: 26px; margin-bottom: 2px; }
       .btn-text { font-size: 0.75rem; letter-spacing: 1px; writing-mode: vertical-rl; text-orientation: upright; }
       
-      /* 修正：使用 Grid 來處理多區塊的響應式排版，避免 Flex-wrap 造成的高度塌陷與消失 */
+      /* 使用 Grid 來處理多區塊的響應式排版 */
       .expense-gratitude-wrapper { grid-column: 1 / 5; display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 10px; min-height: 0; margin-bottom: 0; }
       .expense-ratio-block { margin-bottom: 0; padding: 12px 10px; display: flex; flex-direction: column; min-width: 0; }
       .meals-block { margin-bottom: 0; padding: 12px 10px; display: flex; flex-direction: column; min-width: 0; }
       .gratitude-block { margin-bottom: 0; padding: 12px 10px; display: flex; flex-direction: column; min-width: 0; }
 
-      /* 手機版排版調整：比例和飲食各一半並排，感恩日記掉到下方滿版 */
+      /* 手機版排版調整：比例在左佔兩列高度，飲食在右上，感恩在右下 */
       @media (max-width: 768px) {
-          .expense-gratitude-wrapper { grid-template-columns: 1fr 1fr; }
-          .gratitude-block { grid-column: 1 / 3; }
+          .expense-gratitude-wrapper { grid-template-columns: 1fr 1.2fr; }
+          .expense-ratio-block { grid-column: 1; grid-row: 1 / 3; }
+          .meals-block { grid-column: 2; grid-row: 1; }
+          .gratitude-block { grid-column: 2; grid-row: 2; }
       }
 
       .meal-label { color: var(--accent-brown); font-weight: 500; margin-right: 5px; font-size: 0.75rem; flex-shrink: 0; }
@@ -405,7 +407,7 @@
             <div class="expense-gratitude-wrapper">
                 <div class="muji-card expense-ratio-block">
                     <div class="card-label" style="margin-bottom: 8px;">支出比例</div>
-                    <div id="expense-ratio-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; justify-content: center;">
+                    <div id="expense-ratio-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; justify-content: flex-start;">
                         <div style="color:#ccc; text-align:center; font-size: 0.8rem;">讀取中...</div>
                     </div>
                 </div>
