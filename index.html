@@ -86,9 +86,15 @@
       .btn-icon span { font-size: 26px; margin-bottom: 2px; }
       .btn-text { font-size: 0.75rem; letter-spacing: 1px; writing-mode: vertical-rl; text-orientation: upright; }
       
-      .expense-gratitude-wrapper { grid-column: 1 / 5; display: flex; gap: 10px; align-items: stretch; min-height: 0; margin-bottom: 0; }
-      .expense-ratio-block { flex: 1; margin-bottom: 0; padding: 12px 15px; display: flex; flex-direction: column; min-width: 0; }
-      .gratitude-block { flex: 2; margin-bottom: 0; padding: 12px 15px; display: flex; flex-direction: column; min-width: 0; }
+      .expense-gratitude-wrapper { grid-column: 1 / 5; display: flex; gap: 8px; align-items: stretch; min-height: 0; margin-bottom: 0; flex-wrap: wrap; }
+      .expense-ratio-block { flex: 1 1 25%; margin-bottom: 0; padding: 12px 10px; display: flex; flex-direction: column; min-width: 0; }
+      .meals-block { flex: 1 1 25%; margin-bottom: 0; padding: 12px 10px; display: flex; flex-direction: column; min-width: 0; }
+      .gratitude-block { flex: 1.5 1 40%; margin-bottom: 0; padding: 12px 10px; display: flex; flex-direction: column; min-width: 0; }
+
+      .meal-label { color: var(--accent-brown); font-weight: 500; margin-right: 5px; font-size: 0.75rem; flex-shrink: 0; }
+      #meals-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; flex: 1; justify-content: center; }
+      #meals-list li { font-size: 0.8rem; color: var(--text-main); display: flex; align-items: baseline; }
+      .meal-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 
       .gratitude-compact { display: flex; flex-direction: row; gap: 8px; align-items: center; margin-top: auto; padding-top: 8px; border-top: 1px solid #f0f0f0; }
       .input-underline { flex: 1; border: none; border-bottom: 1px solid #ddd; background: transparent; padding: 4px 0; font-size: 0.9rem; border-radius: 0; outline: none; transition: border-color 0.3s; }
@@ -128,17 +134,16 @@
           display: flex; 
           flex-direction: column; 
           box-shadow: 2px 3px 6px rgba(0,0,0,0.06); 
-          height: 78px; /* 修改為容納約兩行文字的高度 */
+          height: 78px;
           overflow: hidden;
           
-          /* 隨機旋轉與位移 (變數由 JS 注入) */
+          /* 隨機旋轉與位移 */
           transform: translate(var(--tx, 0), var(--ty, 0)) rotate(var(--rot, 0deg));
           transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
           position: relative;
           cursor: pointer;
           z-index: 1;
       }
-      /* Hover 或 Active 時卡片浮起、轉正、放大 */
       #reading-notes-list li:hover, #reading-notes-list li:active {
           transform: scale(1.08) translate(0, 0) rotate(0deg);
           box-shadow: 0 8px 20px rgba(0,0,0,0.12);
@@ -171,7 +176,7 @@
           overflow-y: auto; 
           word-break: break-word; 
           display: block; 
-          white-space: pre-wrap; /* 新增: 保留空格與換行排版 */
+          white-space: pre-wrap;
           scrollbar-width: none; 
       }
       #reading-notes-list li .content::-webkit-scrollbar { display: none; }
@@ -398,6 +403,17 @@
                     </div>
                 </div>
 
+                <!-- 新增飲食區塊 -->
+                <div class="muji-card meals-block">
+                    <div class="card-label" style="margin-bottom: 8px;">今日飲食</div>
+                    <ul id="meals-list">
+                        <li><span class="meal-label">早餐</span><span class="meal-text" id="meal-display-breakfast">-</span></li>
+                        <li><span class="meal-label">午餐</span><span class="meal-text" id="meal-display-lunch">-</span></li>
+                        <li><span class="meal-label">晚餐</span><span class="meal-text" id="meal-display-dinner">-</span></li>
+                        <li><span class="meal-label">其他</span><span class="meal-text" id="meal-display-other">-</span></li>
+                    </ul>
+                </div>
+
                 <div class="muji-card gratitude-block">
                     <div class="card-label" style="margin-bottom: 2px;">感恩事件</div>
                     <ul id="mini-gratitude-list"><li>讀取中...</li></ul>
@@ -511,7 +527,28 @@
       <button onclick="switchTab('tab-journal')" class="nav-btn" id="nav-journal"><span class="material-icons-round">auto_stories</span></button>
     </nav>
     <div id="expense-modal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>新增收支</h3><span class="material-icons-round close-btn" onclick="closeModal()">close</span></div><form id="modal-form"><div class="input-group"><label>金額</label><input type="number" id="amount" required placeholder="0" inputmode="decimal" style="font-size: 1.5rem; text-align: center;"></div><div class="input-group"><label>消費方式</label><div class="chip-group"><label class="muji-chip"><input type="radio" name="paymentMethod" value="現金" checked><span>現金</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="悠遊卡"><span>悠遊卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="台新Gogoro"><span>台新Gogoro</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="富邦J卡"><span>富邦J卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="中信卡"><span>中信卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="玉山卡"><span>玉山卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="新光卡"><span>新光卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="兆豐卡"><span>兆豐卡</span></label><label class="muji-chip"><input type="radio" name="paymentMethod" value="串暫欠"><span>串暫欠</span></label></div></div><div class="input-group" style="display:flex; justify-content:space-between; align-items:center;"><label style="margin:0;">消費拆分?</label><label class="switch"><input type="checkbox" id="isSplit" onchange="toggleSplitOptions()"><span class="slider round"></span></label></div><div id="split-section" style="display:none; background:#fafafa; padding:10px; border:1px solid #eee; margin-bottom:15px;"><div class="input-group"><label>拆分方式</label><select id="splitMethod" onchange="toggleSplitInputs()"><option value="一人一半">一人一半</option><option value="潘全額">潘全額</option><option value="潘部分">潘部分</option><option value="他人">他人</option></select></div><div id="input-pan-part" class="input-group" style="display:none;"><label>潘 部份金額</label><input type="number" id="panAmount"></div><div id="input-others" class="input-group" style="display:none;"><label>他人 金額</label><input type="number" id="othersAmount"></div><div id="input-chuan-pay" class="input-group" style="display:none;"><label>串 支付 (選填)</label><input type="number" id="chuanPay" placeholder="0"></div></div><div class="input-group" style="display:flex; align-items:center; gap:10px;"><input type="checkbox" id="isTobacco" style="width:auto;"><label for="isTobacco" style="margin:0;">是否含菸</label></div><div class="input-group"><label>備註</label><div class="chip-group" style="margin-bottom: 8px;"><button type="button" class="btn-mini-muji" onclick="appendNote('生存底線')">生存底線</button><button type="button" class="btn-mini-muji" onclick="appendNote('飲食耗材')">飲食耗材</button><button type="button" class="btn-mini-muji" onclick="appendNote('保養折舊')">保養折舊</button><button type="button" class="btn-mini-muji" onclick="appendNote('能量體驗')">能量體驗</button><button type="button" class="btn-mini-muji" onclick="appendNote('垃圾消費')">垃圾消費</button></div><input type="text" id="note" placeholder="手動輸入或點擊上方標籤..."></div><button type="button" class="btn-muji" onclick="submitModalExpense()">確認儲存</button></form></div></div>
-    <div id="modal-start" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>一日之始</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('start')">close</span></div><form onsubmit="submitJournalPart('start'); return false;"><div class="input-group"><label>日期</label><input type="date" id="j_date_start" required></div><div class="input-group"><label>今日目標</label><input type="text" id="j_q3"></div><div class="input-group"><label>是否能靜心看盤</label><select id="j_q4"><option value="是">是</option><option value="否">否</option></select></div><button type="submit" class="btn-muji">儲存</button></form></div></div>
+    
+    <!-- 修正: 移除了靜心看盤欄位，新增了飲食安排 -->
+    <div id="modal-start" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h3>一日之始</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('start')">close</span></div>
+            <form onsubmit="submitJournalPart('start'); return false;">
+                <div class="input-group"><label>日期</label><input type="date" id="j_date_start" required></div>
+                <div class="input-group"><label>今日目標</label><input type="text" id="j_q3"></div>
+                
+                <div style="background:#fafafa; padding:12px; border:1px solid #eee; border-radius:4px; margin-bottom:15px;">
+                    <h4 style="margin:0 0 10px; color:var(--accent-brown); font-size:0.85rem; display:flex; align-items:center;"><span class="material-icons-round" style="font-size:16px; margin-right:4px;">restaurant</span> 飲食規劃</h4>
+                    <div class="input-group"><label>早餐</label><input type="text" id="j_meal_breakfast" placeholder="預計吃什麼..."></div>
+                    <div class="input-group"><label>午餐</label><input type="text" id="j_meal_lunch" placeholder="預計吃什麼..."></div>
+                    <div class="input-group"><label>晚餐</label><input type="text" id="j_meal_dinner" placeholder="預計吃什麼..."></div>
+                    <div class="input-group" style="margin-bottom:0;"><label>其他</label><input type="text" id="j_meal_other" placeholder="點心/飲料..."></div>
+                </div>
+                
+                <button type="submit" class="btn-muji">儲存</button>
+            </form>
+        </div>
+    </div>
+    
     <div id="modal-middle" class="modal-overlay"><div class="modal-content" style="max-height:85vh; overflow-y:auto;"><div class="modal-header"><h3>一日之中</h3><span class="material-icons-round close-btn" onclick="closeJournalModal('middle')">close</span></div><form onsubmit="submitJournalPart('middle'); return false;"><div class="input-group"><label>日期</label><input type="date" id="j_date_middle" required></div><div class="input-group"><label>是否進行交易</label><select id="j_q5"><option value="否">否</option><option value="買進">買進</option><option value="賣出">賣出</option><option value="當沖">當沖</option></select></div><hr style="border:0; border-top:1px dashed #eee; margin:15px 0;"><h4 style="margin:0 0 10px; color:#666;">帳戶紀錄</h4><div class="flex-row"><div class="flex-col input-group"><label>帳面金額</label><input type="number" id="j_q6"></div><div class="flex-col input-group"><label>成本</label><input type="number" id="j_q7"></div></div><div class="flex-row"><div class="flex-col input-group"><label>淨利%</label><input type="number" id="j_q8" step="0.01"></div><div class="flex-col input-group"><label>銀行餘額</label><input type="number" id="j_q9"></div></div><hr style="border:0; border-top:1px dashed #eee; margin:15px 0;"><h4 style="margin:0 0 10px; color:#666;">大盤紀錄</h4><div class="input-group"><label>今日大事件</label><input type="text" id="j_q10"></div><div class="flex-row"><div class="flex-col input-group"><label>大盤指數</label><input type="number" id="j_q11" step="0.01"></div><div class="flex-col input-group"><label>漲跌%</label><input type="number" id="j_q12" step="0.01"></div></div><button type="submit" class="btn-muji">儲存</button></form></div></div>
     
     <div id="modal-end" class="modal-overlay">
@@ -692,7 +729,7 @@
                        'goal-skills', 'goal-life', 'cycle-rate', 'is_recording_day', 'daily-progress-bar', 'progress-text', 'career_people', 
                        'career_incident', 'career_next_focus', 'sport_execution', 'beauty_routine', 'wealth_evidence', 'invest_practice', 
                        'declutter_item', 'declutter_area', 'j_q86', 'j_q87', 'j_q88', 'j_q90', 'check_duolingo', 'check_speak', 'check_reading',
-                       'reading-note-text'];
+                       'reading-note-text', 'meal-display-breakfast', 'meal-display-lunch', 'meal-display-dinner', 'meal-display-other'];
           ids.forEach(id => {
               D[id] = document.getElementById(id);
           });
@@ -998,6 +1035,7 @@
             renderTable(data.investCalcData, 'table-invest-calc');
             renderTable(data.profitData, 'table-profit');
 
+            // 渲染支出比例
             var ratioContainer = D['expense-ratio-container'];
             if (ratioContainer) {
                 ratioContainer.innerHTML = '';
@@ -1036,6 +1074,13 @@
                     ratioContainer.innerHTML = '<div style="color:#ccc; text-align:center; font-size: 0.8rem; margin-top: 10px;">無比例資料</div>';
                 }
             }
+            
+            // 渲染今日飲食
+            var meals = data.todayMeals || {};
+            if(D['meal-display-breakfast']) D['meal-display-breakfast'].innerText = meals.breakfast || "-";
+            if(D['meal-display-lunch']) D['meal-display-lunch'].innerText = meals.lunch || "-";
+            if(D['meal-display-dinner']) D['meal-display-dinner'].innerText = meals.dinner || "-";
+            if(D['meal-display-other']) D['meal-display-other'].innerText = meals.other || "-";
             
             var calList = D['calendar-list'];
             if(calList && data.calendarEvents) {
@@ -1270,8 +1315,19 @@
         if (type === 'start') { 
             data.date = document.getElementById('j_date_start').value;
             data.q3 = document.getElementById('j_q3').value; 
-            data.q4 = document.getElementById('j_q4').value; 
-            pushToFirebaseQueue('journal', data, "一日之始已紀錄", () => { closeJournalModal(type); document.getElementById('j_q3').value = ''; btn.disabled = false; });
+            data.meal_breakfast = document.getElementById('j_meal_breakfast').value;
+            data.meal_lunch = document.getElementById('j_meal_lunch').value;
+            data.meal_dinner = document.getElementById('j_meal_dinner').value;
+            data.meal_other = document.getElementById('j_meal_other').value;
+            pushToFirebaseQueue('journal', data, "一日之始已紀錄", () => { 
+                closeJournalModal(type); 
+                document.getElementById('j_q3').value = ''; 
+                document.getElementById('j_meal_breakfast').value = '';
+                document.getElementById('j_meal_lunch').value = '';
+                document.getElementById('j_meal_dinner').value = '';
+                document.getElementById('j_meal_other').value = '';
+                btn.disabled = false; 
+            });
         } 
         else if (type === 'middle') { 
             data.date = document.getElementById('j_date_middle').value;
